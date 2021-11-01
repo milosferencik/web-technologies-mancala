@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CC3008: Mancala</title>
+    <script src="app.js"></script>
 </head>
 <body>
     <!-- Title -->
     <h1>Mancala</h1>
-
+    
     <!-- Settings
         * number of holes on each side of the board
         * initial number of stones per hole
@@ -29,7 +31,24 @@
     
     
     <!-- Game Area -->
-    
+    <div id="player-0">Player 0</div>
+
+    <div id="board">
+        <div id="col-1">
+            <div id="mancala0"></div>
+        </div>
+
+        <div id="col-2">
+            <div id="row0"></div>
+            <div id="row1"></div>
+        </div>
+
+        <div id="col-3">
+            <div id="mancala1"></div>
+        </div>
+    </div>
+
+    <div id="player-1">Player 1</div>
     <!-- Identification
         * player must authenticate with login and password
         * after auth, allow the authenticated session to end
