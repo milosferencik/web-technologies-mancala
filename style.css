@@ -1,4 +1,3 @@
-
   
   
 body {
@@ -6,6 +5,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 nav {
@@ -114,6 +114,25 @@ body > div {
     flex-wrap: wrap;
     position: absolute;
     z-index: 2;
+}
+
+#rules__button {
+    z-index: 3;
+    margin-left: -250px;
+    overflow: hidden;
+}
+
+#rules__container {
+    color:brown;
+    background-color: white;
+    border: #323232;
+    padding: 2%;
+    display: none;
+    overflow: hidden;
+    max-height: 240px;
+    max-width: 550px;
+    position: absolute;
+    z-index: 3;
 }
 
 .hole0, .hole1 {

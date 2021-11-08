@@ -1,5 +1,5 @@
 let settings = {
-    numberOfHoles: 6,
+    numberOfHoles: 7,
     numberOfMarblesPerHoles: 4,
     startPlayer: 1,
     opponent: "computer",
@@ -100,6 +100,7 @@ class Board {
 
         if(this.content[this.getMancalaPos(0)] > this.content[this.getMancalaPos(1)]) {
             console.log("Game is ower! The winner is Player 0!");
+
         } else if (this.content[this.getMancalaPos(0)] == this.content[this.getMancalaPos(1)]){
             console.log("Game is ower! It is tie!");
         } else {
@@ -142,4 +143,13 @@ class Board {
 
         console.log("Player " + this.currentPlayer.toString() + " turn.");
     } 
+}
+
+/**
+ * Show and hide Rules container
+ */
+function toggleRules() {
+    var x = document.getElementById("rules__container");
+    if (x.style.display == "none") x.style.display = "block";
+    else x.style.display = "none";
 }
