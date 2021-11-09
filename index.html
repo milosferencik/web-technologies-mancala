@@ -9,15 +9,69 @@
     <script src="app.js"></script>
 </head>
 <body>
-    <!-- Title -->
-    <h1>Mancala</h1>
+    <nav>
+        <!-- Title -->
+        <h1>Mancala</h1>
+        <!-- Commands
+        * view instructions
+        * start the game with the current configuration
+        * give up the game
+        * view ratings
+        -->
+        <button id="defaultTab" class="tabLinks" onclick="openTab(event, 'settingsTab')">Settings</button>
+        <button class="tabLinks" onclick="openTab(event, 'rulesTab')">Rules</button>
+        <button class="tabLinks" onclick="openTab(event, 'messagesTab')">Messages</button>
+        <button class="tabLinks" onclick="openTab(event, 'leaderboardTab')">Leaderboard</button>
+    </nav>
+    
+    <!-- Settings
+        * number of holes on each side of the board
+        * initial number of stones per hole
+        * play against another player or computer
+        * start the game or let computer start
+        * artificial intelligence level
+        Assignment 1: only against the computer 
+    -->
+    <div id="settingsTab" class="tabContent">
+        <label for="numberOfHoles" >Number of holes:</label>
+        <input id="numberOfHoles" type="number" value="6"/>
+        <br>
+        <label for="numberOfMarblesPerHoles">Number of marbles per holes:</label>
+        <input id="numberOfMarblesPerHoles" type="number" value="4"/>
+        <br>
+        <label for="opponent">Choose an opponent:</label>
+        <select id="opponent" name="opponent" size="3">
+            <option value="localPlayer">Local player</option>
+            <option value="remotePlayer">Remote player</option>
+            <option value="computer" selected>Computer</option>
+        </select>
+        <br>
+        <p>Player who starts:</p>
+        <input type="radio" id="radioMe" name="radioStartPlayer" value="1" checked="checked">
+        <label for="radioMe">Me</label>
+        <input type="radio" id="radioOpponent" name="radioStartPlayer" value="0">
+        <label for="radioOpponent">Opponent</label>
+        <br>
+        <label for="computerLevel">Choose an computer level:</label>
+        <select id="computerLevel" name="computerLevel" size="2">
+            <option value="beginner" selected>Beginner</option>
+            <option value="advanced">Advanced</option>
+        </select>
+        <br>
+        <label for="player1Name" >My name:</label>
+        <input id="player1Name" type="text" value="Player 1"/>
+        <br>
+        <label for="player0Name" >Opponent name:</label>
+        <input id="player0Name" type="text" value="Player 0"/>
+        <br>
+        <button class="startButton" onclick="startGame()">Start</button>
+    </div>
+    
     <!-- Instructions (Done)
         * this area presents the game rules and tips on how to play the game
     -->
     <!-- Rules have been taken from https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf -->
-    <button id="rules__button" onclick="toggleRules()">Rules</button>
-    <div id="rules__container" onclick="toggleRules()">
-        <h3>Rules</h3>
+    <div id="rulesTab" class="tabContent">
         <p>Mancala has the following rules. Read them to understand how to play this game</p>
         <ol>
             <li> Play always moves around the board in a counter-clockwise circle (to the right)
@@ -28,44 +82,48 @@
         </ol>
         <p>More detailed rules can be found <a target="_blank" href="https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf">here</a></p>
     </div>
-    
-    <!-- Settings
-        * number of holes on each side of the board
-        * initial number of stones per hole
-        * play against another player or computer
-        * start the game or let computer start
-        * artificial intelligence level
-        Assignment 1: only against the computer -->
 
 
-    <!-- Commands
-        * view instructions
-        * start the game with the current configuration
-        * give up the game
-        * view ratings
-     -->
+    <!-- Messages (Do now)
+        * Display messages during the game
+        * Examples: "player must return to play", "player gave up and lost", "game ended with a victory of player X"
+    -->
+    <div id="messagesTab" class="tabContent">
+        <div id="messagesContainer">
+            <p>Start Game!</p>
+        </div>
+    </div>
     
+    <!-- Leaderboard (Do now)
+        * leaderboard with the best scores registered
+        * Assignment 1: scores only against the computer
+        * later assignments will require scores to be taken from a server (player vs player)
+        * also can be a "transitional panel" that opens with a command (ex: button click)
+    -->
+    <div id="leaderboardTab" class="tabContent">
+        <h3>Leaderboard</h3>
+    </div>
     
     <!-- Game Area -->
     <hr>
-    <div id="player-0">Player 0</div>
+    <div id="player0">Player 0</div>
 
     <div id="board">
-        <div id="col-1">
+        <div id="col1">
             <div id="mancala0"></div>
         </div>
 
-        <div id="col-2">
+        <div id="col2">
             <div id="row0"></div>
             <div id="row1"></div>
         </div>
 
-        <div id="col-3">
+        <div id="col3">
             <div id="mancala1"></div>
         </div>
     </div>
 
-    <div id="player-1">Player 1</div>
+    <div id="player1">Player 1</div>
     
     <!-- Identification (TODO)
         * player must authenticate with login and password
@@ -88,18 +146,6 @@
         * use OOP approach for the board
      -->
     
-    <!-- Leaderboard (Do now)
-        * leaderboard with the best scores registered
-        * Assignment 1: scores only against the computer
-        * later assignments will require scores to be taken from a server (player vs player)
-        * also can be a "transitional panel" that opens with a command (ex: button click)
-    -->
-
-    <!-- Messages (Do now)
-        * Display messages during the game
-        * Examples: "player must return to play", "player gave up and lost", "game ended with a victory of player X"
-    -->
-
     <!-- Artificial Intelligence
         * Assignment 1: only against client (computer) locally
         * the simplest algorithm is to choose the move that produces the most number of player stones

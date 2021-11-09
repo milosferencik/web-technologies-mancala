@@ -1,21 +1,36 @@
 let settings = {
-    numberOfHoles: 7,
+    numberOfHoles: 2,
     numberOfMarblesPerHoles: 4,
     startPlayer: 1,
     opponent: "computer",
     computerLevel: 1
 }
 
-window.onload = function() {
-    const board = new Board(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles);
+let playerName = {
+    0: "Player 0",
+    1: "Player 1"
 }
 
+window.onload = function() {
+    document.getElementById("defaultTab").click();
+    startGame();
+}
+
+// class Game {
+//     constructor() {
+//         this.board = new Board(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles);
+//         this.status = "start";
+
+//     }
+// }
 class Board {
     constructor(startPlayer, numberOfHoles, numberOfMarblesPerHoles) {
         this.content = new Array(2*numberOfHoles+2);
         this.board = new Array(2*numberOfHoles+2);
         this.currentPlayer = startPlayer;
         this.numberOfHoles = numberOfHoles;
+
+        this.removeBoard();
 
         let index = 0;
         for (let player = 0; player<2; player++) {
@@ -44,6 +59,7 @@ class Board {
             this.board[index] = mancala;
             this.content[index++] = 0;
         }
+        writeMessage("It is " + playerName[this.currentPlayer] + " turn!");
     }  
 
     getMancalaPos(player) {
@@ -99,12 +115,12 @@ class Board {
         }
 
         if(this.content[this.getMancalaPos(0)] > this.content[this.getMancalaPos(1)]) {
-            console.log("Game is ower! The winner is Player 0!");
+            writeMessage("Game is ower! The winner is " + playerName[0] + "!");
 
         } else if (this.content[this.getMancalaPos(0)] == this.content[this.getMancalaPos(1)]){
-            console.log("Game is ower! It is tie!");
+            writeMessage("Game is ower! It is tie!");
         } else {
-            console.log("Game is ower! The winner is Player 1!");
+            writeMessage("Game is ower! The winner is " + playerName[1] + "!");
         }
     }
 
@@ -127,12 +143,14 @@ class Board {
 
     play(pos) {
         if (this.board[pos].className != "hole"+this.currentPlayer.toString()) {
-            console.log("It is player " + this.currentPlayer.toString() + " turn!");
+            writeMessage("It is " + playerName[this.currentPlayer] + " turn!");
             return;
         } else if (this.content[pos] == 0) {
-            console.log("You can not click on hole with zero marbles!");
+            writeMessage("You can not click on hole with zero marbles!");
             return;
         }
+
+        console.log(this.content);
 
         const marbles = this.content[pos];
         this.content[pos] = 0;
@@ -141,15 +159,44 @@ class Board {
         this.checkEnd();
         this.currentPlayer = this.determineNextPlayer(endPos);
 
-        console.log("Player " + this.currentPlayer.toString() + " turn.");
+        writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
     } 
+
+    removeBoard() {
+        document.querySelectorAll(".marbles").forEach(el => el.remove());
+        document.querySelectorAll(".hole0").forEach(el => el.remove());
+        document.querySelectorAll(".hole1").forEach(el => el.remove());
+    }
 }
 
-/**
- * Show and hide Rules container
- */
-function toggleRules() {
-    var x = document.getElementById("rules__container");
-    if (x.style.display == "none") x.style.display = "block";
-    else x.style.display = "none";
+function startGame() {
+    settings.numberOfHoles = parseInt(document.getElementById("numberOfHoles").value);
+    settings.numberOfMarblesPerHoles = parseInt(document.getElementById("numberOfMarblesPerHoles").value);
+    settings.startPlayer = parseInt(document.querySelector('input[name="radioStartPlayer"]:checked').value);
+    playerName[0] = document.getElementById("player0Name").value;
+    playerName[1] = document.getElementById("player1Name").value;
+    document.getElementById("player0").innerText = playerName[0];
+    document.getElementById("player1").innerText = playerName[1];
+    const board = new Board(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles);
+}
+
+function openTab(evt, tabName) {
+    var i, tabContent, tabLinks;
+    tabContent = document.getElementsByClassName("tabContent");
+    for (i = 0; i < tabContent.length; i++) {
+      tabContent[i].style.display = "none";
+    }
+    tabLinks = document.getElementsByClassName("tabLinks");
+    for (i = 0; i < tabLinks.length; i++) {
+      tabLinks[i].className = tabLinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+function writeMessage(text) {
+    let messagesContainer = document.getElementById("messagesContainer");
+    let message = document.createElement("p");
+    message.innerText = text;
+    messagesContainer.appendChild(message);
 }

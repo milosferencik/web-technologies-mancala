@@ -8,13 +8,17 @@ body {
     overflow: hidden;
 }
 
+body > div ,nav {
+    width: 95%;
+}
+
 nav {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
-    align-items: center;
-    background-color: #323232;
-    color: white;
+    align-items: left;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
     padding-left: 25px;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -27,22 +31,35 @@ h1 {
 }
 
 button {
-    background-color: #323232;
-    color: white;
     text-transform: uppercase;
     margin: 0 20px;
     cursor: pointer;
     border: none;
-    font-size: 14px;
+    font-size: 17px;
+    background-color: inherit;
 }
 
-body > div {
-    width: 95%;
-    height: 350px;
+/* Change background color of buttons on hover */
+nav button:hover {
+    background-color: #ddd;
+}
+  
+/* Create an active/current tablink class */
+nav button.active {
+    background-color: #ccc;
 }
 
-#player-0, #player-1 {
-    height: 100px;
+/* Style the tab content */
+.tabContent {
+    display: none;
+    overflow: scroll;
+    height: 150px;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+#player0, #player1 {
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -52,7 +69,7 @@ body > div {
     letter-spacing: 2px;
 }
 
-#player-1 {
+#player1 {
     align-items: flex-start;
     padding-top: 10px;
 }
@@ -64,13 +81,14 @@ body > div {
     align-items: center;
     background-color: chocolate;
     border-radius: 20px;
+    height: 350px;
 }
 
 #board > div {
     height: 100%;
 }
 
-#col-1, #col-3 {
+#col1, #col3 {
     width: 15%;
     display: flex;
     justify-content: center;
@@ -79,7 +97,7 @@ body > div {
     z-index: 1;
 }
 
-#col-2 {
+#col2 {
     width: 70%;
     display: flex;
     flex-direction: column;
@@ -114,25 +132,6 @@ body > div {
     flex-wrap: wrap;
     position: absolute;
     z-index: 2;
-}
-
-#rules__button {
-    z-index: 3;
-    margin-left: -250px;
-    overflow: hidden;
-}
-
-#rules__container {
-    color:brown;
-    background-color: white;
-    border: #323232;
-    padding: 2%;
-    display: none;
-    overflow: hidden;
-    max-height: 240px;
-    max-width: 550px;
-    position: absolute;
-    z-index: 3;
 }
 
 .hole0, .hole1 {
