@@ -22,6 +22,7 @@
         <button class="tabLinks" onclick="openTab(event, 'rulesTab')">Rules</button>
         <button class="tabLinks" onclick="openTab(event, 'messagesTab')">Messages</button>
         <button class="tabLinks" onclick="openTab(event, 'leaderboardTab')">Leaderboard</button>
+        <button class="tabLinks" onclick="openTab(event, 'loginTab')">Login</button>
     </nav>
     
     <!-- Settings
@@ -65,6 +66,7 @@
         <input id="player0Name" type="text" value="Player 0"/>
         <br>
         <button class="startButton" onclick="startGame()">Start</button>
+        <button class="cancelButton" onclick="cancelGame()">Cancel</button>
     </div>
     
     <!-- Instructions (Done)
@@ -89,7 +91,7 @@
         * Examples: "player must return to play", "player gave up and lost", "game ended with a victory of player X"
     -->
     <div id="messagesTab" class="tabContent">
-        <ul id="messagesContainer"></ul>
+        <div id="messagesContainer"></div>
     </div>
     
     <!-- Leaderboard (Do now)
@@ -99,9 +101,31 @@
         * also can be a "transitional panel" that opens with a command (ex: button click)
     -->
     <div id="leaderboardTab" class="tabContent">
-        <h3>Leaderboard</h3>
+        <table id="leaderboardTable">
+            <tr>
+              <th>Player</th>
+              <th>Win</th> 
+              <th>Lose</th>
+              <th>Tie</th>
+            </tr>
+          </table>
     </div>
     
+    <!-- Identification (TODO)
+        * player must authenticate with login and password
+        * after auth, allow the authenticated session to end
+        * Assignment 1: created area for it, but authentication will come in next assignments
+    -->
+    <div id="loginTab" class="tabContent">
+        <label for="uname"><b>Username</b></label>
+        <input type="text" placeholder="Enter Username" name="uname" required>
+        <br>
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" name="psw" required>
+        <br>
+        <button type="submit">Login</button>
+    </div>
+
     <!-- Game Area -->
     <hr>
     <div id="player0">Player 0</div>
@@ -122,12 +146,6 @@
     </div>
 
     <div id="player1">Player 1</div>
-    
-    <!-- Identification (TODO)
-        * player must authenticate with login and password
-        * after auth, allow the authenticated session to end
-        * Assignment 1: created area for it, but authentication will come in next assignments
-    -->
 
     <!-- State (DONE)
         * this area must show: 

@@ -22,12 +22,8 @@ window.onload = function() {
 }
 
 function startGame() {
-    if(game != "undefined" && game.status == "started") {
-        if (confirm('Are you sure you want to give up?')) {
-            // TODO Save it to leaderbord!
-          } else {
-            return;
-          }
+    if (cancelGame() != 0) {
+        return;
     }
     // read and save values from settings
     settings.numberOfHoles = parseInt(document.getElementById("numberOfHoles").value);
@@ -41,6 +37,18 @@ function startGame() {
     settings.computerLevel = document.getElementById("computerLevel").value;
     // create new game
     game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles, settings.opponent, settings.computerLevel);
+}
+
+function cancelGame() {
+    if(game != "undefined" && game.status == "started") {
+        if (!confirm('Are you sure you want to give up?'))  return 1;
+        // change status
+        game.status = "ended";
+        // save result to Leaderboard
+        writeToLeaderboard(game.getAnotherPlayer(game.currentPlayer),1,0,0);
+        writeToLeaderboard(game.currentPlayer,0,1,0);
+    }
+    return 0;
 }
 
 class Game {
@@ -96,7 +104,7 @@ class Game {
         }
 
         // change the player
-        this.currentPlayer = (this.currentPlayer+1) % 2;
+        this.currentPlayer = this.getAnotherPlayer(this.currentPlayer);
         writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
         if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
     } 
@@ -106,15 +114,22 @@ class Game {
         this.status = "ended";
         // write message about the result
         if(this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
-            writeMessage("Game is over! The winner is " + playerName[0] + "!");
-
+            writeMessage("Game is over! The winner is player " + playerName[0] + "!");
+            writeToLeaderboard(0,1,0,0);
+            writeToLeaderboard(1,0,1,0);
         } else if (this.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)){
             writeMessage("Game is over! It is tie!");
+            writeToLeaderboard(0,0,0,1);
+            writeToLeaderboard(1,0,0,1);
         } else {
-            writeMessage("Game is over! The winner is " + playerName[1] + "!");
+            writeMessage("Game is over! The winner is player " + playerName[1] + "!");
+            writeToLeaderboard(0,0,1,0);
+            writeToLeaderboard(1,1,0,0);
         }
-        //TODO write it to LeaderBoard
-        //TODO start new game ?
+    }
+
+    getAnotherPlayer(player) {
+        return (player+1) % 2;
     }
 
     // select correct algorithm for computer according to his level
@@ -137,6 +152,8 @@ class Game {
             }
         }
     }
+
+    //TODO advance Algo
 
 }
 
@@ -318,7 +335,28 @@ function openTab(evt, tabName) {
 // write message into tab messages
 function writeMessage(text) {
     let messagesContainer = document.getElementById("messagesContainer");
-    let message = document.createElement("li");
-    message.innerText = new Date().toLocaleTimeString() + "\t" + text;
+    let message = document.createElement("p");
+    message.innerHTML = new Date().toLocaleTimeString() + " &nbsp;&nbsp;" + text;
     messagesContainer.insertBefore(message, messagesContainer.firstChild);
+}
+
+function writeToLeaderboard(player, win, lose, tie) {
+    var table = document.getElementById("leaderboardTable");
+    var n = table.rows.length;
+    // find row with player
+    for (i = 1; i < n; i++) {
+        if (table.rows[i].cells[0].innerText == playerName[player]) { 
+            // update values
+            table.rows[i].cells[1].innerText = parseInt(table.rows[i].cells[1].innerText) + win;
+            table.rows[i].cells[2].innerText = parseInt(table.rows[i].cells[2].innerText) + lose;
+            table.rows[i].cells[3].innerText = parseInt(table.rows[i].cells[3].innerText) + tie;
+            return;
+        } 
+    }
+    // if new player create new row
+    let newRow = table.insertRow(n);
+    newRow.insertCell(0).innerText = playerName[player];
+    newRow.insertCell(1).innerText = win;
+    newRow.insertCell(2).innerText = lose;
+    newRow.insertCell(3).innerText = tie;
 }
