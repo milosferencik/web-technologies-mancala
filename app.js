@@ -2,8 +2,8 @@ let settings = {
     numberOfHoles: 2,
     numberOfMarblesPerHoles: 4,
     startPlayer: 1,
-    opponent: "computer",
-    computerLevel: 1
+    opponent: "Computer",
+    computerLevel: "Begginer"
 }
 
 let playerName = {
@@ -16,18 +16,68 @@ window.onload = function() {
     startGame();
 }
 
-// class Game {
-//     constructor() {
-//         this.board = new Board(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles);
-//         this.status = "start";
+class Game {
+    constructor(startPlayer, numberOfHoles, numberOfMarblesPerHoles, opponent, computerLevel) {
+        this.opponent = opponent;
+        if (opponent == "Computer") this.computerAlgo = this.getComputerAlgo(computerLevel);
+        this.status = "initialized";
+        this.currentPlayer = startPlayer;
+        this.board = new Board(numberOfHoles, numberOfMarblesPerHoles, this);
+        writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
+    }
 
-//     }
-// }
+    play(pos) {
+        if (!this.board.isPlayersHole(this.currentPlayer, pos)) {
+            writeMessage("It is " + playerName[this.currentPlayer] + " turn!");
+            return;
+        } else if (this.board.isHoleEmpty(pos)) {
+            writeMessage("You can not click on hole with zero marbles!");
+            return;
+        }
+        this.status = "started";
+
+        const marbles = this.board.getMarblesOnPosition(pos);
+        this.board.setMarblesOnPosition(pos, 0);
+        const endPos = this.board.distributeMarbles(pos, marbles, this.currentPlayer);
+        let end = this.board.checkEnd();
+        if (end != 0) {
+            this.endGame(end);
+            return;
+        }
+        if (this.board.isPlayerMancala(endPos, this.currentPlayer)) {
+            writeMessage("Player " + playerName[this.currentPlayer] + " has another turn.");
+            return
+        }
+
+        this.currentPlayer = (this.currentPlayer+1) % 2;
+        writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
+        if (this.opponent == "Computer") this.computerAlgo(this.board);
+    } 
+
+    endGame() {
+        this.status = "ended";
+        if(this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
+            writeMessage("Game is ower! The winner is " + playerName[0] + "!");
+
+        } else if (tthis.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)){
+            writeMessage("Game is ower! It is tie!");
+        } else {
+            writeMessage("Game is ower! The winner is " + playerName[1] + "!");
+        }
+        //TODO write it to LeaderBoard
+        //TODO start new game ?
+    }
+
+    getComputerAlgo(computerLevel) {
+        return function(board) {writeMessage("computer turn");}
+    }
+
+}
+
 class Board {
-    constructor(startPlayer, numberOfHoles, numberOfMarblesPerHoles) {
+    constructor(numberOfHoles, numberOfMarblesPerHoles, game) {
         this.content = new Array(2*numberOfHoles+2);
         this.board = new Array(2*numberOfHoles+2);
-        this.currentPlayer = startPlayer;
         this.numberOfHoles = numberOfHoles;
 
         this.removeBoard();
@@ -45,7 +95,7 @@ class Board {
         
                 hole.onclick = ((fun,pos) => {
                     return () => fun(pos);
-                })(this.play.bind(this),index);
+                })(game.play.bind(game),index);
         
                 marbles.innerText = numberOfMarblesPerHoles;
                 this.board[index] = hole;
@@ -59,26 +109,46 @@ class Board {
             this.board[index] = mancala;
             this.content[index++] = 0;
         }
-        writeMessage("It is " + playerName[this.currentPlayer] + " turn!");
     }  
+
+    isPlayersHole(player, pos) {
+        return this.board[pos].className == "hole"+player.toString();
+    }
+
+    isHoleEmpty(pos) {
+        return this.content[pos] == 0;
+    }
+
+    setMarblesOnPosition(pos, marbles) {
+        this.content[pos] = marbles;
+        this.board[pos].childNodes[0].innerText = marbles;
+    }
+
+    getPlayersMarblesInMancala(player) {
+        return this.content[this.getMancalaPos(player)];
+    }
+
+    getMarblesOnPosition(pos) {
+        return this.content[pos];
+    }
 
     getMancalaPos(player) {
         if (player == 0) return this.numberOfHoles;
         return 2*this.numberOfHoles+1;
     }
 
-    isCurrentPlayerMancala(pos) {
-        return pos == this.getMancalaPos(this.currentPlayer);
+    isPlayerMancala(pos, player) {
+        return pos == this.getMancalaPos(player);
     }
 
-    nextPosition(pos) {
-        const nextPos = ((this.currentPlayer == 1 && pos+1 == this.numberOfHoles) || (this.currentPlayer == 0 && pos+1 == 2*this.numberOfHoles+1)) ? pos+2  : pos+1;
+    nextPosition(pos, currentPlayer) {
+        const nextPos = ((currentPlayer == 1 && pos+1 == this.numberOfHoles) || (currentPlayer == 0 && pos+1 == 2*this.numberOfHoles+1)) ? pos+2  : pos+1;
         return nextPos % (2*this.numberOfHoles+2);
     }
 
-    checkRules(pos) {
-        if (this.board[pos].className == "hole"+this.currentPlayer.toString() && this.content[pos] == 1) {
-            const currentPlayerPos = this.getMancalaPos(this.currentPlayer);
+    checkRules(pos, currentPlayer) {
+        if (this.board[pos].className == "hole"+currentPlayer.toString() && this.content[pos] == 1) {
+            const currentPlayerPos = this.getMancalaPos(currentPlayer);
             const oppositeHolePos = (2*this.numberOfHoles) - pos;
             this.content[currentPlayerPos] += this.content[pos] + this.content[oppositeHolePos];
             this.board[currentPlayerPos].childNodes[0].innerText = this.content[currentPlayerPos];
@@ -90,7 +160,7 @@ class Board {
     } 
 
     checkEnd() {
-         const sumMarblesInPlayerHoles = ((start, end) => {
+        const sumMarblesInPlayerHoles = ((start, end) => {
             let sum = 0;
             for (let i=start; i<end; i++) {
                 sum += this.content[i];
@@ -101,7 +171,7 @@ class Board {
         const player0 = sumMarblesInPlayerHoles(0, this.numberOfHoles);
         const player1 = sumMarblesInPlayerHoles(this.numberOfHoles+1, 2*this.numberOfHoles+1);
         
-        if (player0 != 0 && player1 != 0) return;
+        if (player0 != 0 && player1 != 0) return 0;
         
         this.content[this.getMancalaPos(0)] += player0;
         this.content[this.getMancalaPos(1)] += player1;
@@ -113,55 +183,20 @@ class Board {
             this.content[i] = 0;
             this.board[i].childNodes[0].innerText = 0;
         }
-
-        if(this.content[this.getMancalaPos(0)] > this.content[this.getMancalaPos(1)]) {
-            writeMessage("Game is ower! The winner is " + playerName[0] + "!");
-
-        } else if (this.content[this.getMancalaPos(0)] == this.content[this.getMancalaPos(1)]){
-            writeMessage("Game is ower! It is tie!");
-        } else {
-            writeMessage("Game is ower! The winner is " + playerName[1] + "!");
-        }
+        return 1;
     }
 
-    determineNextPlayer(endPos) {
-        if (this.isCurrentPlayerMancala(endPos)) {
-            return this.currentPlayer;
-        }
-        return (this.currentPlayer+1) % 2;
-    }
-
-    distributeMarbles(pos, marbles) {
+    distributeMarbles(pos, marbles, currentPlayer) {
         while (marbles > 0) {
-            pos = this.nextPosition(pos);
+            pos = this.nextPosition(pos, currentPlayer);
             this.board[pos].childNodes[0].innerText = ++this.content[pos];
             marbles--;
         }
-        this.checkRules(pos);
+        this.checkRules(pos, currentPlayer);
         return pos;
     }
 
-    play(pos) {
-        if (this.board[pos].className != "hole"+this.currentPlayer.toString()) {
-            writeMessage("It is " + playerName[this.currentPlayer] + " turn!");
-            return;
-        } else if (this.content[pos] == 0) {
-            writeMessage("You can not click on hole with zero marbles!");
-            return;
-        }
-
-        console.log(this.content);
-
-        const marbles = this.content[pos];
-        this.content[pos] = 0;
-        this.board[pos].childNodes[0].innerText = 0;
-        const endPos = this.distributeMarbles(pos, marbles);
-        this.checkEnd();
-        this.currentPlayer = this.determineNextPlayer(endPos);
-
-        writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
-    } 
-
+    
     removeBoard() {
         document.querySelectorAll(".marbles").forEach(el => el.remove());
         document.querySelectorAll(".hole0").forEach(el => el.remove());
@@ -177,7 +212,9 @@ function startGame() {
     playerName[1] = document.getElementById("player1Name").value;
     document.getElementById("player0").innerText = playerName[0];
     document.getElementById("player1").innerText = playerName[1];
-    const board = new Board(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles);
+    settings.opponent = document.getElementById("opponent").value;
+    settings.computerLevel = document.getElementById("computerLevel").value;
+    const game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles, settings.opponent, settings.computerLevel);
 }
 
 function openTab(evt, tabName) {
