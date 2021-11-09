@@ -8,6 +8,10 @@ body {
     overflow: hidden;
 }
 
+ul {
+    list-style-type: none;
+}
+
 body > div ,nav {
     width: 95%;
 }
