@@ -19,7 +19,10 @@ window.onload = function() {
 class Game {
     constructor(startPlayer, numberOfHoles, numberOfMarblesPerHoles, opponent, computerLevel) {
         this.opponent = opponent;
-        if (opponent == "Computer") this.computerAlgo = this.getComputerAlgo(computerLevel);
+        if (opponent == "computer") {
+            console.log("computer is playing")
+            this.computerAlgo = this.getComputerAlgo(computerLevel);
+        }
         this.status = "initialized";
         this.currentPlayer = startPlayer;
         this.board = new Board(numberOfHoles, numberOfMarblesPerHoles, this);
@@ -46,12 +49,13 @@ class Game {
         }
         if (this.board.isPlayerMancala(endPos, this.currentPlayer)) {
             writeMessage("Player " + playerName[this.currentPlayer] + " has another turn.");
+            if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
             return
         }
 
         this.currentPlayer = (this.currentPlayer+1) % 2;
         writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
-        if (this.opponent == "Computer") this.computerAlgo(this.board);
+        if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
     } 
 
     endGame() {
@@ -59,7 +63,7 @@ class Game {
         if(this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
             writeMessage("Game is ower! The winner is " + playerName[0] + "!");
 
-        } else if (tthis.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)){
+        } else if (this.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)){
             writeMessage("Game is ower! It is tie!");
         } else {
             writeMessage("Game is ower! The winner is " + playerName[1] + "!");
@@ -69,7 +73,20 @@ class Game {
     }
 
     getComputerAlgo(computerLevel) {
-        return function(board) {writeMessage("computer turn");}
+        return this.beginnerAlgo;
+    }
+
+    beginnerAlgo(board) {
+        let computerRange = board.numberOfHoles; // number of holes per player
+        while (true) {
+            let randomChoice = parseInt(Math.random() * computerRange); // random hole index for comupter
+            // if chosen hole has marbles, choose it and break
+            if (board.content[randomChoice] != 0) {
+                // make computer choose that hole
+                this.play(randomChoice);
+                break;
+            }
+        }
     }
 
 }
@@ -214,6 +231,8 @@ function startGame() {
     document.getElementById("player1").innerText = playerName[1];
     settings.opponent = document.getElementById("opponent").value;
     settings.computerLevel = document.getElementById("computerLevel").value;
+    console.log(settings.opponent);
+    console.log(settings.computerLevel);
     const game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles, settings.opponent, settings.computerLevel);
 }
 
