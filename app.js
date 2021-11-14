@@ -60,7 +60,8 @@ class Game {
         }
         this.status = "initialized";
         this.currentPlayer = startPlayer;
-        this.board = new Board(numberOfHoles, numberOfMarblesPerHoles, (opponent == "localPlayer"), this);
+        this.board = new Board(numberOfHoles, numberOfMarblesPerHoles);
+        this.board.initializeBoard((opponent == "localPlayer"), this);
 
         writeMessage("Game is initialized. Player " + playerName[this.currentPlayer] + " starts the game.");
         // if the computer starts, let's call its computation
@@ -90,6 +91,10 @@ class Game {
 
         // check if the game is over
         let end = this.board.checkEnd();
+
+        // render the board
+        this.board.renderBoard();
+
         if (end != 0) {
             // end the game
             this.endGame(end);
@@ -158,7 +163,7 @@ class Game {
 }
 
 class Board {
-    constructor(numberOfHoles, numberOfMarblesPerHoles, allHolesClickable, game) {
+    constructor(numberOfHoles, numberOfMarblesPerHoles) {
         // holes indexing example
         //  3 2 1 0
         // 4       9
@@ -171,53 +176,15 @@ class Board {
         this.board = new Array(2*numberOfHoles+2);
         this.numberOfHoles = numberOfHoles;
 
-        this.removeBoard();
-
-        // create the board
-        let index = 0;
-        for (let player = 0; player<2; player++) {
-            for(let i=0; i<numberOfHoles; i++) {
-                // create the hole
-                const parent = document.getElementById("row"+player.toString());
-                let hole = document.createElement("div");
-                hole.className = "hole"+player.toString();
-                parent.appendChild(hole);
-                
-                // make holes of local players clickable
-                if (allHolesClickable || index > numberOfHoles) {
-                    // bind the game.play method on click
-                    hole.onclick = ((fun,pos) => {
-                        return () => fun(pos);
-                    })(game.play.bind(game),index);
-                }
-
-                // add the marbles to hole
-                const marbles = document.createElement("div");
-                marbles.className = "marbles";
-                hole.appendChild(marbles)
-                marbles.innerText = numberOfMarblesPerHoles;
-                this.board[index] = hole;
-                this.content[index] = numberOfMarblesPerHoles;
-                
-                // increment the index
-                index++;
-            }
-            // add the marbles to mancala
-            const mancala = document.getElementById("mancala"+player.toString());
-            const marbles = document.createElement("div");
-            marbles.className = "marbles";
-            mancala.appendChild(marbles);
-            marbles.innerText = 0;
-            this.board[index] = mancala;
-            this.content[index] = 0;
-
-            // increment the index
-            index++;
+        for (let i = 0; i < this.content.length; i++) {
+            this.content[i] = numberOfMarblesPerHoles;
         }
+        this.content[this.getMancalaPosition(0)] = 0;
+        this.content[this.getMancalaPosition(1)] = 0;
     }  
 
     isPlayersHole(player, pos) {
-        return this.board[pos].className == "hole"+player.toString();
+        return (player == 0 && pos >= 0 && pos < this.getMancalaPosition(0)) || (player == 1 && pos > this.getMancalaPosition(0) && pos < this.getMancalaPosition(1));
     }
 
     isHoleEmpty(pos) {
@@ -226,7 +193,6 @@ class Board {
 
     setMarblesOnPosition(pos, marbles) {
         this.content[pos] = marbles;
-        this.board[pos].childNodes[0].innerText = marbles;
     }
 
     getPlayersMarblesInMancala(player) {
@@ -248,22 +214,19 @@ class Board {
 
     // returns position of next hole, skip opponent mancala
     getNextPosition(pos, currentPlayer) {
-        const nextPos = ((currentPlayer == 1 && pos+1 == this.numberOfHoles) || (currentPlayer == 0 && pos+1 == 2*this.numberOfHoles+1)) ? pos+2  : pos+1;
+        const nextPos = ((currentPlayer == 1 && pos+1 == this.getMancalaPosition(0)) || (currentPlayer == 0 && pos+1 == this.getMancalaPosition(1))) ? pos+2  : pos+1;
         return nextPos % (2*this.numberOfHoles+2);
     }
 
     checkRules(pos, currentPlayer) {
         // check if the last marble is inserted to the empty current player's hole
-        if (this.board[pos].className == "hole"+currentPlayer.toString() && this.content[pos] == 1) {
+        if (this.isPlayersHole(currentPlayer, pos) && this.content[pos] == 1) {
             // put the marble and the marbles from opposite hole to current player's mancala
             const currentPlayerPos = this.getMancalaPosition(currentPlayer);
             const oppositeHolePos = (2*this.numberOfHoles) - pos;
             this.content[currentPlayerPos] += this.content[pos] + this.content[oppositeHolePos];
-            this.board[currentPlayerPos].childNodes[0].innerText = this.content[currentPlayerPos];
             this.content[pos] = 0;
-            this.board[pos].childNodes[0].innerText = this.content[pos];
             this.content[oppositeHolePos] = 0;
-            this.board[oppositeHolePos].childNodes[0].innerText = this.content[oppositeHolePos];
         }
     } 
 
@@ -287,13 +250,10 @@ class Board {
         // game is over, we add player's marbles from player's holes to player's mancala
         this.content[this.getMancalaPosition(0)] += player0;
         this.content[this.getMancalaPosition(1)] += player1;
-        this.board[this.getMancalaPosition(0)].childNodes[0].innerText = this.content[this.getMancalaPosition(0)];
-        this.board[this.getMancalaPosition(1)].childNodes[0].innerText = this.content[this.getMancalaPosition(1)];
-
+        
         for (let i=0; i<2*this.numberOfHoles+2; i++) {
             if (i==this.getMancalaPosition(0) || i==this.getMancalaPosition(1)) continue;
             this.content[i] = 0;
-            this.board[i].childNodes[0].innerText = 0;
         }
         return 1;
     }
@@ -303,7 +263,7 @@ class Board {
         while (marbles > 0) {
             pos = this.getNextPosition(pos, currentPlayer);
             // add marble to hole on position pos
-            this.board[pos].childNodes[0].innerText = ++this.content[pos];
+            this.content[pos]++;
             marbles--;
         }
         this.checkRules(pos, currentPlayer);
@@ -315,6 +275,57 @@ class Board {
         document.querySelectorAll(".marbles").forEach(el => el.remove());
         document.querySelectorAll(".hole0").forEach(el => el.remove());
         document.querySelectorAll(".hole1").forEach(el => el.remove());
+    }
+
+    createBoard(allHolesClickable, game) {
+        let index = 0;
+        for (let player = 0; player<2; player++) {
+            for(let i=0; i<this.numberOfHoles; i++) {
+                // create the hole
+                const parent = document.getElementById("row"+player.toString());
+                let hole = document.createElement("div");
+                hole.className = "hole"+player.toString();
+                parent.appendChild(hole);
+                
+                // make holes of local players clickable
+                if (allHolesClickable || index > this.numberOfHoles) {
+                    // bind the game.play method on click
+                    hole.onclick = ((fun,pos) => {
+                        return () => fun(pos);
+                    })(game.play.bind(game),index);
+                }
+
+                // add the marbles to hole
+                const marbles = document.createElement("div");
+                marbles.className = "marbles";
+                hole.appendChild(marbles)
+                this.board[index] = hole;
+                
+                // increment the index
+                index++;
+            }
+            // add the marbles to mancala
+            const mancala = document.getElementById("mancala"+player.toString());
+            const marbles = document.createElement("div");
+            marbles.className = "marbles";
+            mancala.appendChild(marbles);
+            this.board[index] = mancala;
+
+            // increment the index
+            index++;
+        }
+    }
+
+    renderBoard() {
+        for (let i = 0; i < this.content.length; i++) {
+            this.board[i].childNodes[0].innerText = this.content[i];
+        }
+    }
+
+    initializeBoard(allHolesClickable, game) {
+        this.removeBoard();
+        this.createBoard(allHolesClickable, game);
+        this.renderBoard();
     }
 }
 
