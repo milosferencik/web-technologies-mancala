@@ -162,42 +162,37 @@ class Game {
     advancedAlgo() {
         console.log("Advanced game has begun!")
         // 1. at depth == 0, choose a move that gives the most marbles in AI's Mancala
-        // create a copy of game
         let bestChoice = 0;
         let holeIndex = 0;
-        console.log(game.board.numberOfHoles);
-        // create an array of 'game.board.numberOfHoles' number of games
-        let games = [game.board.numberOfHoles];
+        
         for (let i = 0; i < game.board.numberOfHoles; i++) {
-            games[i] = cloneObject(game);
-            
-        }
-        for (let i = 0; i < game.board.numberOfHoles; i++) {
-            // Make a game copy for each attempt
-            console.log('condition (if not 0 then ok)', games[i].board.content[i]);
-            if (games[i].board.content[i] != 0) { // only choose hole if it's not empty
+            if (this.board.content[i] != 0) { // only choose hole if it's not empty
+                // create new copy of board
+                let newBoard = new Board(this.board.numberOfHoles, this.board.numberOfMarblesPerHoles);
+                newBoard.copy(this.board);
 
-                // const marbles = games[i].board.content[i];
-                console.log('beforeDistribution=',games[i].board.content);
-                playCopy(games[i], i); // play game with hole i
-                console.log('afterDistribution=',games[i].board.content);
+                // play game with hole i
+                this.advancePlay(i, newBoard); 
 
-                let tempAiMancala = games[i].board.content[game.board.numberOfHoles]; // check number of marbles in AI's Mancala
-                console.log('tempAi=',tempAiMancala);
-                console.log('bestChoice=',bestChoice);
-                console.log('better?', (tempAiMancala > bestChoice))
+                // check number of marbles in AI's Mancala
+                const tempAiMancala = newBoard.getPlayersMarblesInMancala(0); 
+                
                 if (tempAiMancala > bestChoice) {
                     bestChoice = tempAiMancala;
                     holeIndex = i;
                 }
             }
-            console.log(games[i].board.content);
         }
-        console.log('holeIndex',holeIndex);
+        console.log('Ai plays on position ', holeIndex);
         console.log(this.board.content);
         this.play(holeIndex);
     }
 
+    advancePlay(pos, board) {
+        const marbles = board.getMarblesOnPosition(pos);
+        board.setMarblesOnPosition(pos, 0);
+        board.distributeMarbles(pos, marbles, 0);
+    }
 }
 
 class Board {
@@ -213,13 +208,22 @@ class Board {
         // board contains hole elements
         this.board = new Array(2*numberOfHoles+2);
         this.numberOfHoles = numberOfHoles;
+        this.numberOfMarblesPerHoles = numberOfMarblesPerHoles
 
         for (let i = 0; i < this.content.length; i++) {
-            this.content[i] = numberOfMarblesPerHoles;
+            this.content[i] = this.numberOfMarblesPerHoles;
         }
         this.content[this.getMancalaPosition(0)] = 0;
         this.content[this.getMancalaPosition(1)] = 0;
-    }  
+    } 
+    
+    copy(other) {
+        if (other instanceof Board) {
+            this.content = other.content.slice();
+          } else {
+            console.log("Warning try to copy bad type!");
+          }
+    }
 
     isPlayersHole(player, pos) {
         return (player == 0 && pos >= 0 && pos < this.getMancalaPosition(0)) || (player == 1 && pos > this.getMancalaPosition(0) && pos < this.getMancalaPosition(1));
@@ -409,110 +413,3 @@ function writeToLeaderboard(player, win, lose, tie) {
     newRow.insertCell(2).innerText = lose;
     newRow.insertCell(3).innerText = tie;
 }
-
- // return a copied object (deep copy)
- function cloneObject(objectToClone) {
-    let newObject = {};
-    for (let element in objectToClone) {
-        if (objectToClone.hasOwnProperty(element)) {
-            newObject[element] = objectToClone[element];
-       }
-    }
-    return newObject;
-}
-
-// copy foplay the hole with position pos
-function playCopy(copiedGame, pos) {
-    // // check 
-    // if (copiedGame.status == "ended") {
-    //     writeMessage("Game is over! For new game go to Settings->Start!");
-    //     return;
-    // } else if (!copiedGame.board.isPlayersHole(copiedGame.currentPlayer, pos)) {
-    //     writeMessage("It is " + playerName[copiedGame.currentPlayer] + " turn!");
-    //     return;
-    // } else if (copiedGame.board.isHoleEmpty(pos)) {
-    //     writeMessage("You can not click on hole with zero marbles!");
-    //     return;
-    // }
-    // // change status
-    // copiedGame.status = "started";
-
-    // take marbles from hole and distribute them 
-    const marbles = getMarblesOnPositionCopy(copiedGame.board, pos);
-    setMarblesOnPositionCopy(copiedGame.board, pos, 0);
-    const endPos = distributeMarblesCopy(copiedGame.board, pos, marbles, copiedGame.currentPlayer);
-
-    // // check if the game is over
-    // let end = copiedGame.board.checkEnd();
-
-    // // render the board
-    // copiedGame.board.renderBoard();
-
-    // if (end != 0) {
-    //     // end the game
-    //     copiedGame.endGame();
-    //     return;
-    // }
-
-    // // check if player has another turn
-    // if (copiedGame.board.isPositionPlayersMancala(endPos, copiedGame.currentPlayer)) {
-    //     writeMessage("Player " + playerName[copiedGame.currentPlayer] + " has another turn.");
-    //     if (copiedGame.opponent == "computer" && copiedGame.currentPlayer == 0) copiedGame.computerAlgo(copiedGame.board);
-    //     return
-    // }
-
-    // // change the player
-    // copiedGame.currentPlayer = getAnotherPlayerCopy(copiedGame.currentPlayer);
-    // writeMessage("Player " + playerName[copiedGame.currentPlayer] + " turn.");
-    // if (copiedGame.opponent == "computer" && copiedGame.currentPlayer == 0) copiedGame.computerAlgo(copiedGame.board);
-}
-
-function getAnotherPlayerCopy(player) {
-    return (player+1) % 2;
-}
-
-function getMarblesOnPositionCopy(board, pos) {
-    return board.content[pos];
-}
-
-// return the position of hole where the last marble was inserted
-function distributeMarblesCopy(board, pos, marbles, currentPlayer) {
-    while (marbles > 0) {
-        pos = getNextPositionCopy(board, pos, currentPlayer);
-        // add marble to hole on position pos
-        board.content[pos]++;
-        marbles--;
-    }
-    return checkRulesCopy(pos, currentPlayer);
-}
-
-// returns position of next hole, skip opponent mancala
-function getNextPositionCopy(board, pos, currentPlayer) {
-    const nextPos = ((currentPlayer == 1 && pos+1 == getMancalaPositionCopy(board, 0)) || (currentPlayer == 0 && pos+1 == getMancalaPositionCopy(board, 1))) ? pos+2  : pos+1;
-    return nextPos % (2*board.numberOfHoles+2);
-}
-
-function getMancalaPositionCopy(board, player) {
-    if (player == 0) return board.numberOfHoles;
-    return 2*board.numberOfHoles+1;
-}
-
-function setMarblesOnPositionCopy(board, pos, marbles) {
-    board.content[pos] = marbles;
-}
-
-function isPlayersHoleCopy(game, player, pos) {
-    return (player == 0 && pos >= 0 && pos < getMancalaPositionCopy(game.board, 0)) || (player == 1 && pos > getMancalaPosition(game.board, 0) && pos < getMancalaPosition(game.board, 1));
-}
-
-function checkRulesCopy(board, pos, currentPlayer) {
-    // check if the last marble is inserted to the empty current player's hole
-    if (isPlayersHoleCopy(currentPlayer, pos) && board.content[pos] == 1) {
-        // put the marble and the marbles from opposite hole to current player's mancala
-        const currentPlayerPos = getMancalaPositionCopy(board, currentPlayer);
-        const oppositeHolePos = (2*board.numberOfHoles) - pos;
-        board.content[currentPlayerPos] += board.content[pos] + board.content[oppositeHolePos];
-        board.content[pos] = 0;
-        board.content[oppositeHolePos] = 0;
-    }
-} 
