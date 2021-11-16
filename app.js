@@ -1,6 +1,6 @@
 let settings = {
     numberOfHoles: 6,
-    numberOfMarblesPerHoles: 4,
+    numberOfMarblesPerHole: 4,
     startPlayer: 1,
     opponent: "computer",
     computerLevel: "advanced"
@@ -17,7 +17,7 @@ window.onload = function() {
     // show default tab
     document.getElementById("defaultTab").click();
     // create game
-    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles, settings.opponent, settings.computerLevel);
+    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
     
 }
 
@@ -27,7 +27,7 @@ function startGame() {
     }
     // read and save values from settings
     settings.numberOfHoles = parseInt(document.getElementById("numberOfHoles").value);
-    settings.numberOfMarblesPerHoles = parseInt(document.getElementById("numberOfMarblesPerHoles").value);
+    settings.numberOfMarblesPerHole = parseInt(document.getElementById("numberOfMarblesPerHole").value);
     settings.startPlayer = parseInt(document.querySelector('input[name="radioStartPlayer"]:checked').value);
     playerName[0] = document.getElementById("player0Name").value;
     playerName[1] = document.getElementById("player1Name").value;
@@ -36,7 +36,7 @@ function startGame() {
     settings.opponent = document.getElementById("opponent").value;
     settings.computerLevel = document.getElementById("computerLevel").value; // [beginner, advanced]
     // create new game
-    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHoles, settings.opponent, settings.computerLevel);
+    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
 }
 
 function cancelGame() {
@@ -45,20 +45,20 @@ function cancelGame() {
         // change status
         game.status = "ended";
         // save result to Leaderboard
-        writeToLeaderboard(game.getAnotherPlayer(game.currentPlayer),1,0,0);
+        writeToLeaderboard(getAnotherPlayer(game.currentPlayer),1,0,0);
         writeToLeaderboard(game.currentPlayer,0,1,0);
     }
     return 0;
 }
 
 class Game {
-    constructor(startPlayer, numberOfHoles, numberOfMarblesPerHoles, opponent, computerLevel) {
+    constructor(startPlayer, numberOfHoles, numberOfMarblesPerHole, opponent, computerLevel) {
         // initialize game fields
         this.opponent = opponent;
         if (opponent == "computer") this.computerAlgo = this.getComputerAlgo(computerLevel);
         this.status = "initialized";
         this.currentPlayer = startPlayer;
-        this.board = new Board(numberOfHoles, numberOfMarblesPerHoles);
+        this.board = new Board(numberOfHoles, numberOfMarblesPerHole);
         this.board.initializeBoard((opponent == "localPlayer"), this);
 
         writeMessage("Game is initialized. Player " + playerName[this.currentPlayer] + " starts the game.");
@@ -68,7 +68,7 @@ class Game {
 
     // play the hole with position pos
     play(pos) {
-        // check 
+        // checks
         if (this.status == "ended") {
             writeMessage("Game is over! For new game go to Settings->Start!");
             return;
@@ -76,7 +76,6 @@ class Game {
             writeMessage("It is " + playerName[this.currentPlayer] + " turn!");
             return;
         } else if (this.board.isHoleEmpty(pos)) {
-            console.log('line 79=',this.board.content);
             writeMessage("You can not click on hole with zero marbles!");
             return;
         }
@@ -89,7 +88,7 @@ class Game {
         const endPos = this.board.distributeMarbles(pos, marbles, this.currentPlayer);
 
         // check if the game is over
-        let end = this.board.checkEnd();
+        const end = this.board.checkEnd();
 
         // render the board
         this.board.renderBoard();
@@ -108,7 +107,7 @@ class Game {
         }
 
         // change the player
-        this.currentPlayer = this.getAnotherPlayer(this.currentPlayer);
+        this.currentPlayer = getAnotherPlayer(this.currentPlayer);
         writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
         if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
     } 
@@ -130,10 +129,6 @@ class Game {
             writeToLeaderboard(0,0,1,0);
             writeToLeaderboard(1,1,0,0);
         }
-    }
-
-    getAnotherPlayer(player) {
-        return (player+1) % 2;
     }
 
     // select correct algorithm for computer according to his level
@@ -158,45 +153,17 @@ class Game {
         }
     }
 
-    //TODO advance Algo
+    // advance algorithm which sellect a hole according to some computation
     advancedAlgo() {
-        console.log("Advanced game has begun!")
-        // 1. at depth == 0, choose a move that gives the most marbles in AI's Mancala
-        let bestChoice = 0;
-        let holeIndex = 0;
-        
-        for (let i = 0; i < game.board.numberOfHoles; i++) {
-            if (this.board.content[i] != 0) { // only choose hole if it's not empty
-                // create new copy of board
-                let newBoard = new Board(this.board.numberOfHoles, this.board.numberOfMarblesPerHoles);
-                newBoard.copy(this.board);
-
-                // play game with hole i
-                this.advancePlay(i, newBoard); 
-
-                // check number of marbles in AI's Mancala
-                const tempAiMancala = newBoard.getPlayersMarblesInMancala(0); 
-                
-                if (tempAiMancala > bestChoice) {
-                    bestChoice = tempAiMancala;
-                    holeIndex = i;
-                }
-            }
-        }
-        console.log('Ai plays on position ', holeIndex);
-        console.log(this.board.content);
-        this.play(holeIndex);
-    }
-
-    advancePlay(pos, board) {
-        const marbles = board.getMarblesOnPosition(pos);
-        board.setMarblesOnPosition(pos, 0);
-        board.distributeMarbles(pos, marbles, 0);
+        // using minimax algo with depth 5
+        let result = recursiveMove(0, this.board, 5);
+        // computer play on the hole
+        this.play(result[0]);
     }
 }
 
 class Board {
-    constructor(numberOfHoles, numberOfMarblesPerHoles) {
+    constructor(numberOfHoles, numberOfMarblesPerHole) {
         // holes indexing example
         //  3 2 1 0
         // 4       9
@@ -208,10 +175,10 @@ class Board {
         // board contains hole elements
         this.board = new Array(2*numberOfHoles+2);
         this.numberOfHoles = numberOfHoles;
-        this.numberOfMarblesPerHoles = numberOfMarblesPerHoles
+        this.numberOfMarblesPerHole = numberOfMarblesPerHole
 
         for (let i = 0; i < this.content.length; i++) {
-            this.content[i] = this.numberOfMarblesPerHoles;
+            this.content[i] = this.numberOfMarblesPerHole;
         }
         this.content[this.getMancalaPosition(0)] = 0;
         this.content[this.getMancalaPosition(1)] = 0;
@@ -221,7 +188,7 @@ class Board {
         if (other instanceof Board) {
             this.content = other.content.slice();
           } else {
-            console.log("Warning try to copy bad type!");
+            console.log("Board.copy Warning try to copy from object which type is not Board!");
           }
     }
 
@@ -412,4 +379,64 @@ function writeToLeaderboard(player, win, lose, tie) {
     newRow.insertCell(1).innerText = win;
     newRow.insertCell(2).innerText = lose;
     newRow.insertCell(3).innerText = tie;
+}
+
+// returns position and the difference of computer's mancala and player's mancala
+function recursiveMove(player, board, depth) {
+    if (board.checkEnd() == 1 || depth == 0) {
+        // the position here is not important
+        return[0, board.getPlayersMarblesInMancala(0) - board.getPlayersMarblesInMancala(1)]
+    }
+    // decrease depth
+    depth--;
+
+    let holeIndex;
+    let bestChoice, start, end;
+    if (player == 0) {
+        // settings for computer
+        bestChoice = -2 * board.numberOfHoles * board.numberOfMarblesPerHole;
+        start = 0;
+        end = board.getMancalaPosition(0);
+    } else {
+        // settings for player 
+        bestChoice = 2 * board.numberOfHoles * board.numberOfMarblesPerHole;
+        start = board.getMancalaPosition(0) + 1;
+        end = board.getMancalaPosition(1);
+    }
+            
+    for (let i = start; i < end; i++) {
+        // skip empty hole
+        if (board.content[i] != 0)
+        {
+            // create new copy of board
+            let newBoard = new Board(board.numberOfHoles, board.numberOfMarblesPerHole);
+            newBoard.copy(board);
+
+            // play game with hole i
+            const endPos =  advancedPlay(i, newBoard);;
+
+            // get the next player
+            const nextPlayer = board.isPositionPlayersMancala(endPos, player) ? player : getAnotherPlayer(player);
+            
+            // recursive call
+            const result = recursiveMove(nextPlayer, newBoard, depth);
+            
+            // look for maximum or minimum according to player
+            if ((player == 0 && result[1] >= bestChoice) || (player == 1 && result[1] <= bestChoice)) {
+                bestChoice = result[1];
+                holeIndex = i;
+            }    
+        }
+    }
+    return [holeIndex, bestChoice];
+}
+
+function advancedPlay(pos, board) {
+    const marbles = board.getMarblesOnPosition(pos);
+    board.setMarblesOnPosition(pos, 0);
+    return board.distributeMarbles(pos, marbles, 0);
+}
+
+function getAnotherPlayer(player) {
+    return (player+1) % 2;
 }
