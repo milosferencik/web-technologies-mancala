@@ -13,13 +13,13 @@ let playerName = {
 
 let game;
 
-window.onload = function() {
-    // show default tab
-    document.getElementById("defaultTab").click();
-    // create game
-    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
+// window.onload = function() {
+//     // show default tab
+//     document.getElementById("defaultTab").click();
+//     // create game
+//     game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
     
-}
+// }
 
 function startGame() {
     if (cancelGame() != 0) {
@@ -336,28 +336,6 @@ class Board {
         this.createBoard(allHolesClickable, game);
         this.renderBoard();
     }
-}
-
-function openTab(evt, tabName) {
-    let i, tabContent, tabLinks;
-    tabContent = document.getElementsByClassName("tabContent");
-    for (i = 0; i < tabContent.length; i++) {
-      tabContent[i].style.display = "none";
-    }
-    tabLinks = document.getElementsByClassName("tabLinks");
-    for (i = 0; i < tabLinks.length; i++) {
-      tabLinks[i].className = tabLinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
-
-// write message into tab messages
-function writeMessage(text) {
-    let messagesContainer = document.getElementById("messagesContainer");
-    let message = document.createElement("p");
-    message.innerHTML = new Date().toLocaleTimeString() + " &nbsp;&nbsp;" + text;
-    messagesContainer.insertBefore(message, messagesContainer.firstChild);
 }
 
 function writeToLeaderboard(player, win, lose, tie) {
