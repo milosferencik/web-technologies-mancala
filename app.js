@@ -45,8 +45,8 @@ function cancelGame() {
         // change status
         game.status = "ended";
         // save result to Leaderboard
-        writeToLeaderboard(getAnotherPlayer(game.currentPlayer),1,0,0);
-        writeToLeaderboard(game.currentPlayer,0,1,0);
+        // writeToLeaderboard(getAnotherPlayer(game.currentPlayer),1,0,0);
+        // writeToLeaderboard(game.currentPlayer,0,1,0);
     }
     return 0;
 }
@@ -118,16 +118,16 @@ class Game {
         // write message about the result
         if(this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
             writeMessage("Game is over! The winner is player " + playerName[0] + "!");
-            writeToLeaderboard(0,1,0,0);
-            writeToLeaderboard(1,0,1,0);
+            // writeToLeaderboard(0,1,0,0);
+            // writeToLeaderboard(1,0,1,0);
         } else if (this.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)){
             writeMessage("Game is over! It is tie!");
-            writeToLeaderboard(0,0,0,1);
-            writeToLeaderboard(1,0,0,1);
+            // writeToLeaderboard(0,0,0,1);
+            // writeToLeaderboard(1,0,0,1);
         } else {
             writeMessage("Game is over! The winner is player " + playerName[1] + "!");
-            writeToLeaderboard(0,0,1,0);
-            writeToLeaderboard(1,1,0,0);
+            // writeToLeaderboard(0,0,1,0);
+            // writeToLeaderboard(1,1,0,0);
         }
     }
 

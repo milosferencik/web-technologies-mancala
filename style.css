@@ -185,7 +185,7 @@ nav button.active {
     cursor: pointer;
 }
 
-.loginArea {
+#loginArea {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -198,3 +198,12 @@ nav button.active {
     border-color: black;
     z-index: 3;
 }
+
+p#errorMessage {
+    color: red;
+    display: none;
+}
+
+/* :not(div[id="loginArea"]) {
+    visibility: hidden;
+} */

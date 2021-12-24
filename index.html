@@ -12,12 +12,8 @@
 </head>
 <body>
 
-    <!-- Identification
-        * player must authenticate with login and password
-        * after auth, allow the authenticated session to end
-        * Assignment 1: created area for it, but authentication will come in next assignments
-    -->
-    <div class="loginArea">
+    <!-- Identification -->
+    <div id="loginArea">
         <label for="uname"><b>Username</b></label>
         <input id="nickField" type="text" placeholder="Enter Username" name="uname" required>
         <br>
@@ -25,18 +21,14 @@
         <input id="passField" type="password" placeholder="Enter Password" name="psw" required>
         <br>
         <button id="loginButton" type="submit">Login</button>
+        <p id="errorMessage">Incorrect, try again.</p>
     </div>
 
 
     <nav name="navigation">
         <!-- Title -->
         <h1>Mancala</h1>
-        <!-- Commands
-        * view instructions
-        * start the game with the current configuration
-        * give up the game
-        * view ratings
-        -->
+        <!-- Commands-->
         <button id="defaultTab" class="tabLinks" onclick="openTab(event, 'settingsTab')">Settings</button>
         <button class="tabLinks" onclick="openTab(event, 'rulesTab')">Rules</button>
         <button class="tabLinks" onclick="openTab(event, 'messagesTab')">Messages</button>
@@ -44,14 +36,7 @@
         <!-- <button class="tabLinks" onclick="openTab(event, 'loginTab')">Login</button> -->
     </nav>
     
-    <!-- Settings
-        * number of holes on each side of the board
-        * initial number of stones per hole
-        * play against another player or computer
-        * start the game or let computer start
-        * artificial intelligence level
-        Assignment 1: only against the computer 
-    -->
+    <!-- Settings -->
     <div id="settingsTab" class="tabContent">
         <label for="numberOfHoles" >Number of holes:</label>
         <input id="numberOfHoles" type="number" value="6"/>
@@ -89,9 +74,8 @@
     </div>
     
     <!-- Instructions (Done)
-        * this area presents the game rules and tips on how to play the game
-    -->
-    <!-- Rules have been taken from https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf -->
+        This area presents the game rules and tips on how to play the game
+        Rules have been taken from https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf -->
     <div id="rulesTab" class="tabContent">
         <p>Mancala has the following rules. Read them to understand how to play this game</p>
         <ol>
@@ -113,19 +97,13 @@
         <div id="messagesContainer"></div>
     </div>
     
-    <!-- Leaderboard (Do now)
-        * leaderboard with the best scores registered
-        * Assignment 1: scores only against the computer
-        * later assignments will require scores to be taken from a server (player vs player)
-        * also can be a "transitional panel" that opens with a command (ex: button click)
-    -->
+    <!-- Leaderboard (Do now) -->
     <div id="leaderboardTab" class="tabContent">
         <table id="leaderboardTable">
             <tr>
-              <th>Player</th>
-              <th>Win</th> 
-              <th>Lose</th>
-              <th>Tie</th>
+              <th>Nick</th>
+              <th>Victories</th> 
+              <th>Games</th>
             </tr>
           </table>
     </div>
@@ -134,22 +112,18 @@
     <!-- Game Area -->
     <hr>
     <div id="player0">Player 0</div>
-
     <div id="board">
         <div id="col1">
             <div id="mancala0"></div>
         </div>
-
         <div id="col2">
             <div id="row0"></div>
             <div id="row1"></div>
         </div>
-
         <div id="col3">
             <div id="mancala1"></div>
         </div>
     </div>
-
     <div id="player1">Player 1</div>
 
 </body>
