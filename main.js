@@ -1,39 +1,64 @@
+var nickname
+var password
+var gameId
+var joinArea
+
+var size
+var initial
+
+
 window.onload = function() {
     console.log("Loaded")
+    joinArea = document.getElementById('joinArea')
     document.getElementById("defaultTab").click();
     console.log(document.body.children[0])
 
+    // GameArea invisible
+    // joinArea.style.display = 'none';
+    document.getElementById('player1').style.display = 'none';
+    document.getElementById('player0').style.display = 'none';
+    document.getElementById('board').style.display = 'none';
+
     //Register/log in a user
     const loginButton = document.getElementById('loginButton')
-    const nick = document.getElementById('nickField').value
-    const pass = document.getElementById('passField').value
-    loginButton.addEventListener('click', register(nick, pass, registeredSuccess, registeredFailed))
+    loginButton.addEventListener('click', () => {
+      nickname = document.getElementById('nickField').value
+      password = document.getElementById('passField').value
+      register(nickname, password, registeredSuccess, registeredFailed)
+    })
 }
 
 // Function executed if user is registered successfully
 function registeredSuccess() {
-  console.log("Registered/Logged in successfully");
-  const nickname = document.getElementById('nickField').value
-  const password = document.getElementById('passField').value
+  console.log("Log in OK");
   
   document.getElementById('loginArea').style.display ="none";
   document.getElementById('errorMessage').style.display ="none";
 
   loginButton.addEventListener('click', ranking())
   
-  // Start game
-  const startButton = document.getElementsByClassName('startButton')[0]
+  // Join a game
+  const startButton = document.getElementById('joinButton')
   startButton.addEventListener('click', () => {
     // group, nick. pass, size (number of cavities), initial (seeds per cavity)
-    const size = parseInt(document.getElementById("numberOfHoles").value)
-    const initial = parseInt(document.getElementById("numberOfMarblesPerHole").value);
+    size = parseInt(document.getElementById("numberOfHoles").value)
+    initial = parseInt(document.getElementById("numberOfMarblesPerHole").value);
 
-    join('37', nickname, password, size, initial).then((result) => console.log(result))
+    // Join
+    join('37', nickname, password, size, initial).then((result) => {
+      gameId = result
+      update(nickname, gameId)
+    })
+
+    // Display game with indicated properties
+
   })
+  
 
   // Leave game
   const cancelButton = document.getElementsByClassName('cancelButton')[0]
   cancelButton.addEventListener('click', () => {
+    console.log('gameId=', gameId)
     // game, nick, password
     leave(gameId, nickname, password)
   })
@@ -44,20 +69,6 @@ function registeredSuccess() {
 function registeredFailed() {
   console.log("Failed while logging in");
   document.getElementById('errorMessage').style.display ="inline";
-}
-
-function openTab(evt, tabName) {
-    let i, tabContent, tabLinks;
-    tabContent = document.getElementsByClassName("tabContent");
-    for (i = 0; i < tabContent.length; i++) {
-      tabContent[i].style.display = "none";
-    }
-    tabLinks = document.getElementsByClassName("tabLinks");
-    for (i = 0; i < tabLinks.length; i++) {
-      tabLinks[i].className = tabLinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
 }
 
 function openTab(evt, tabName) {

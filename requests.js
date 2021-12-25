@@ -2,26 +2,20 @@ const url = 'http://twserver.alunos.dcc.fc.up.pt:8008/'
 
 
 // Join - join players to start game
-// group - your group's identifier (any string)
-// nick - the user's nick
-// password - the user's password
-// size - the number of cavities by player
-// initial - the number of initial seeds by cavity
 // Returns a hash 'game' that acts as identifier
 function join(group, nick, pass, size, initial) {
-    fetch(url + 'join', {method: 'POST',body: JSON.stringify({
+    return fetch(url + 'join', {method: 'POST',body: JSON.stringify({
         group: group, nick: nick, password: pass, size: size, initial: initial
     })})
     .then(response => response.json())
     .then(data => {
         console.log(data.game)
         return data.game;
-        // Call update
     })
     .catch('Error:', console.log);
 }
 
-// Leave - give up unfinished game      (nick, pass, game)
+// Leave - give up unfinished game
 function leave(nick, pass, game) {
     return fetch(url + 'leave', {method: 'POST', body: JSON.stringify({nick:nick, pass: pass, game: game})})
     .then(response => response.json())
@@ -29,7 +23,7 @@ function leave(nick, pass, game) {
         console.log(data.game)
     })
 }
-// Notify - notify server of a move     (nick, pass, game, move)
+// Notify - notify server of a move
 function notify(nick, pass, game) {
     return function() {
         fetch(url + 'notify', {method: 'POST', body: JSON.stringify({nick:nick, pass: pass, game: game})})
@@ -41,7 +35,7 @@ function notify(nick, pass, game) {
 }
 
 
-// Ranking - return leaderboard
+// Ranking - appends data into leaderboard table
 function ranking() {
     fetch(url + 'ranking', {method: 'POST', body: JSON.stringify({})})
     .then(response => response.json())
@@ -61,34 +55,55 @@ function ranking() {
     .catch('Error:', console.log);
 }
 
-// Register - register user associated with password    (nick, pass)
+// Register - register user associated with password
 function register(nick, pass, doIfRegistered, doIfNot) {
-    return function() {
-        const nick = document.getElementById('nickField').value
-        const pass = document.getElementById('passField').value
-        console.log(nick)
-        console.log(pass)
-        fetch(url + 'register', {method: 'POST', body: JSON.stringify({nick: nick, password: pass})})
-        .then(function(response) {
-            if (response.ok) {
-                console.log('User registered/logged in successfully')
-                response.text().then(console.log);
-                doIfRegistered();
-            } else {
-                console.log('Incorrect password')
-                doIfNot();
-            }
-        })
-        .catch(console.log);
-    }
+    console.log(nick)
+    console.log(pass)
+    fetch(url + 'register', {method: 'POST', body: JSON.stringify({nick: nick, password: pass})})
+    .then(function(response) {
+        if (response.ok) {
+            response.text().then(console.log);
+            doIfRegistered();
+        } else {
+            console.log('Incorrect password')
+            doIfNot();
+        }
+    })
+    .catch(console.log);
 }
 
-// Update (SSE, not XHR) - updates the game situation   (nick, game)
+// Update - updates the game situation
 function update(nick, game) {
-    const eventSource = new EventSource(url + 'update/'+'');
-    eventSource.onmessage = function(event) {
-        const data = JSON.parse(eventd.data);
-        console.log(data)
+    const es = new EventSource(url + `update?nick=${nick}&game=${game}`);
+    // es.onopen = e => console.log("open ", e)
+    es.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        // Winner response
+        if (data.winner != undefined) {
+            // Someone won - game is finished
+            if (data.winner != null) {
+                console.log(`Player ${data.winner} won`)
+            }
+            // Players tied
+            else {
+                console.log(`It is a tie`)
+            }
+            es.close()
+        }
+
+        // Board response
+        if (data.board != undefined) {
+            console.log(data)
+            console.log(data.board)
+            const turn = data.board.turn
+            if (game == null) game = new Game(turn, size, initial, 'remotePlayer', null)
+                        
+        }
     }
-    eventSource.close();
+
+    es.onerror = function(event) {
+        console.log("SSE error " + event)
+    }
+    // es.close();
 }

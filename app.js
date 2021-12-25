@@ -17,7 +17,6 @@ let game;
 //     // show default tab
 //     document.getElementById("defaultTab").click();
 //     // create game
-//     game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
     
 // }
 
@@ -34,6 +33,20 @@ function startGame() {
     document.getElementById("player0").innerText = playerName[0];
     document.getElementById("player1").innerText = playerName[1];
     settings.opponent = document.getElementById("opponent").value;
+    settings.computerLevel = document.getElementById("computerLevel").value; // [beginner, advanced]
+    // create new game
+    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
+}
+
+function startGameRemote() {
+    if (cancelGame() != 0) {
+        return;
+    }
+    // read and save values from settings
+    playerName[0] = document.getElementById("player0Name").value;
+    playerName[1] = document.getElementById("player1Name").value;
+    document.getElementById("player0").innerText = playerName[0];
+    document.getElementById("player1").innerText = playerName[1];
     settings.computerLevel = document.getElementById("computerLevel").value; // [beginner, advanced]
     // create new game
     game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);

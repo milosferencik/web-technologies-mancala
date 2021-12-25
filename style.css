@@ -70,7 +70,8 @@ nav button.active {
 /* Style the tab content */
 .tabContent {
     display: none;
-    overflow: scroll;
+    overflow-y: scroll;
+    overflow-x: hidden;
     height: 150px;
     padding: 6px 12px;
     padding-left: 50px;
@@ -187,23 +188,33 @@ nav button.active {
 
 #loginArea {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-top: -75px;
-    margin-left: -75px;
-    width: 275px;
-    height: 100px;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
     background-color: white;
     border: solid;
-    border-color: black;
+    border-color: white;
     z-index: 3;
 }
 
-p#errorMessage {
-    color: red;
-    display: none;
+.loginContent {
+    position: absolute;
+    /* display:flex;justify-content:center;align-items:center; */
+    /* top: 50px; */
 }
 
-/* :not(div[id="loginArea"]) {
-    visibility: hidden;
-} */
+p#errorMessage {
+    display: none;
+    color: red;
+    position: absolute;
+    left: 75px;
+}
+
+#settingsTab {
+    position: absolute;
+    height: 1500px;
+    width: 500px;
+    justify-content: center;
+    align-items: center;
+}
