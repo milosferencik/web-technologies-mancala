@@ -55,17 +55,20 @@ function cancelGame() {
 // modes: 0 - remotePlay; 1 - localPlay; 2 - AI
 class Game {
     // Constructure for local and AI
-    constructor(startPlayer, opponent, numberOfHoles, numberOfMarblesPerHole, board, computerLevel, playerNicknames = null) {
+    constructor(startPlayer, opponent, board, computerLevel, playerNicknames = null) {
         this.opponent = opponent;
         this.status = "initialized";
         this.currentPlayer = startPlayer;
         this.board = board;
         this.computerAlgo = this.getComputerAlgo(computerLevel);
-        // if (opponent == "remotePlayer") {
-        //     playerName = playerNicknames
-        // }
+        if (opponent == "remotePlayer") {
+            playerName = playerNicknames
+        }
+        console.log(playerName)
         this.board.initializeBoard((opponent == "localPlayer"), this);
         if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
+        console.log(this.currentPlayer)
+        console.log(playerName[this.currentPlayer])
         writeMessage("Game is initialized. Player " + playerName[this.currentPlayer] + " starts the game.");
     }
 
@@ -113,6 +116,14 @@ class Game {
         this.currentPlayer = getAnotherPlayer(this.currentPlayer);
         writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
         if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
+
+        // server: norify the server about the move
+        console.log("calling notify function")
+        console.log(numberOfHoles.value)
+        console.log(parseInt(numberOfHoles.value) + 1)
+        console.log(pos)
+        console.log(pos - (parseInt(numberOfHoles.value) + 1))
+        notify(nickname, password, gameId, pos - (parseInt(numberOfHoles.value) + 1))
     } 
 
     endGame() {
