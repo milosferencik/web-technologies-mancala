@@ -73,8 +73,8 @@ function register(nick, pass, doIfRegistered, doIfNot) {
 }
 
 // Update - updates the game situation
-function update(nick, game) {
-    const es = new EventSource(url + `update?nick=${nick}&game=${game}`);
+function update(nick, gameId) {
+    const es = new EventSource(url + `update?nick=${nick}&game=${gameId}`);
     // es.onopen = e => console.log("open ", e)
     es.onmessage = function(event) {
         const data = JSON.parse(event.data);
@@ -89,15 +89,46 @@ function update(nick, game) {
             else {
                 console.log(`It is a tie`)
             }
+            game = null
             es.close()
         }
 
         // Board response
         if (data.board != undefined) {
-            console.log(data)
+            console.log('opponent=',opponent)
             console.log(data.board)
+            console.log(data.board.sides)
+            for(var i in data.board.sides) {
+                console.log(i)
+                if (nick != i) {
+                    opponent = i
+                    break;
+                }
+            }
+
             const turn = data.board.turn
-            if (game == null) game = new Game(turn, size, initial, 'remotePlayer', null)
+            if (game == null) game = new Game(0, turn, nick, opponent,  size, initial, null)
+
+            // Hide "joinArea"
+            document.getElementById("joinArea").style.display = "none"
+            // Show the created board
+            document.getElementById("player0").style.display = "flex"
+            document.getElementById("board").style.display = "flex"
+            document.getElementById("player1").style.display = "flex"
+            document.getElementById("cancelGame").style.display = "flex"
+            // Set text to player's actual nicknames
+            document.getElementById("player0").innerText = opponent;
+            document.getElementById("player1").innerText = nickname;
+
+
+            console.log(game)
+            // if it's this player's turn
+            if(turn == nickname) {
+                // Make a move by clicking ith tile
+                // Update the board
+                // Send information to the
+            }
+
                         
         }
     }
@@ -106,4 +137,4 @@ function update(nick, game) {
         console.log("SSE error " + event)
     }
     // es.close();
-}
+} 

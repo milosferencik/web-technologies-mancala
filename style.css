@@ -42,7 +42,7 @@ button {
 }
   
 /* Extra style for the cancel button (red) */
-.cancelButton {
+.cancelButton, #cancelGame {
     background-color: #f44336;
 }
 

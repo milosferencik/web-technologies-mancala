@@ -2,6 +2,7 @@ var nickname
 var password
 var gameId
 var joinArea
+var opponent
 
 var size
 var initial
@@ -18,6 +19,7 @@ window.onload = function() {
     document.getElementById('player1').style.display = 'none';
     document.getElementById('player0').style.display = 'none';
     document.getElementById('board').style.display = 'none';
+    document.getElementById('cancelGame').style.display = 'none';
 
     //Register/log in a user
     const loginButton = document.getElementById('loginButton')
