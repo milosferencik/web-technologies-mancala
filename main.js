@@ -2,7 +2,7 @@ var nickname
 var password
 var gameId
 var joinArea
-var opponent
+var opponentRemote
 
 var size
 var initial

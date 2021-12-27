@@ -84,10 +84,12 @@ function update(nick, gameId) {
             // Someone won - game is finished
             if (data.winner != null) {
                 console.log(`Player ${data.winner} won`)
+                //send data to server (points)
             }
             // Players tied
             else {
                 console.log(`It is a tie`)
+                //send data to server (points)
             }
             game = null
             es.close()
@@ -98,16 +100,41 @@ function update(nick, gameId) {
             console.log('opponent=',opponent)
             console.log(data.board)
             console.log(data.board.sides)
+            var nicknames = new Array();
+            var boardContent = new Array();
             for(var i in data.board.sides) {
                 console.log(i)
+                nicknames.push(data.board.sides[i])
+                // opponent
                 if (nick != i) {
+                    opponentInfo = data.board.sides[i]
                     opponent = i
-                    break;
+                }
+                // current player
+                if(nick == i) {
+                    currentInfo = data.board.sides[i]
                 }
             }
 
             const turn = data.board.turn
-            if (game == null) game = new Game(0, turn, nick, opponent,  size, initial, null)
+            // merge arrays into one (boardContent)
+            for(var i in opponentInfo.pits) {
+                boardContent.push(opponentInfo.pits[i])
+            }
+            boardContent.push(opponentInfo.store)
+            for(var i in currentInfo.pits) {
+                boardContent.push(currentInfo.pits[i])
+            }
+            boardContent.push(currentInfo.store)
+            console.log(boardContent)           
+
+
+            board = new Board(size, initial, boardContent)
+            // {0:123, 1:321}
+            console.log("nicknames");
+            console.log(nicknames)
+            game = new Game((nick == turn) ? 1 : 0 , 'remotePlayer',  size, initial, board, null, nicknames)
+
 
             // Hide "joinArea"
             document.getElementById("joinArea").style.display = "none"
