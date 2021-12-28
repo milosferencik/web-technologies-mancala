@@ -19,7 +19,7 @@ function join(group, nick, pass, size, initial) {
 
 // Leave - give up unfinished game
 function leave(nick, pass, game) {
-    return fetch(url + 'leave', { method: 'POST', body: JSON.stringify({ nick: nick, pass: pass, game: game }) })
+    return fetch(url + 'leave', { method: 'POST', body: JSON.stringify({ nick: nick, password: pass, game: game }) })
         .then(response => response.json())
         .then(data => {
             console.log(data.game)
@@ -33,8 +33,7 @@ function notify(nick, pass, game, move) {
     })
         .then(response => response.json())
         .then(data => {
-            console.log('Notify response')
-            console.log(data)
+            console.log('Notify:', data)
         })
 }
 
@@ -82,6 +81,7 @@ function update(nick, gameId) {
     // es.onopen = e => console.log("open ", e)
     es.onmessage = function (event) {
         const data = JSON.parse(event.data);
+        openTab(event, 'messagesTab')
 
         // Winner response
         if (data.winner != undefined) {
@@ -89,14 +89,25 @@ function update(nick, gameId) {
             if (data.winner != null) {
                 console.log(`Player ${data.winner} won`)
                 //send data to server (points)
+                // notify(nickname, password, gameId, null)
             }
             // Players tied
             else {
                 console.log(`It is a tie`)
                 //send data to server (points)
+                // notify(nickname, password, gameId, null)
             }
+            if(game != null) game.endGame();
             game = null
             es.close()
+            // Show "joinArea"
+            document.getElementById("joinArea").style.display = "inline"
+            // Show the created board
+            document.getElementById("player0").style.display = "none"
+            document.getElementById("board").style.display = "none"
+            document.getElementById("player1").style.display = "none"
+            document.getElementById("cancelGame").style.display = "none"
+            return;
         }
 
         // Board response

@@ -109,6 +109,8 @@ class Game {
         if (this.board.isPositionPlayersMancala(endPos, this.currentPlayer)) {
             writeMessage("Player " + playerName[this.currentPlayer] + " has another turn.");
             if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
+            // server: norify the server about the move
+            notify(nickname, password, gameId, pos - (parseInt(numberOfHoles.value) + 1))
             return
         }
 
@@ -118,11 +120,6 @@ class Game {
         if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
 
         // server: norify the server about the move
-        console.log("calling notify function")
-        console.log(numberOfHoles.value)
-        console.log(parseInt(numberOfHoles.value) + 1)
-        console.log(pos)
-        console.log(pos - (parseInt(numberOfHoles.value) + 1))
         notify(nickname, password, gameId, pos - (parseInt(numberOfHoles.value) + 1))
     } 
 
@@ -130,18 +127,22 @@ class Game {
         // change the status
         this.status = "ended";
         // write message about the result
+        // Current player won
         if (this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
             writeMessage("Game is over! The winner is player " + playerName[0] + "!");
             // writeToLeaderboard(0,1,0,0);
             // writeToLeaderboard(1,0,1,0);
+        // It is a tie
         } else if (this.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)) {
             writeMessage("Game is over! It is tie!");
             // writeToLeaderboard(0,0,0,1);
             // writeToLeaderboard(1,0,0,1);
+        // Opponent won
         } else {
             writeMessage("Game is over! The winner is player " + playerName[1] + "!");
             // writeToLeaderboard(0,0,1,0);
             // writeToLeaderboard(1,1,0,0);
+            leave(nickname, password, gameId)
         }
     }
 

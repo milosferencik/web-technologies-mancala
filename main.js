@@ -58,8 +58,7 @@ function registeredSuccess() {
   
 
   // Leave game
-  const cancelButton = document.getElementsByClassName('cancelButton')[0]
-  cancelButton.addEventListener('click', () => {
+  document.getElementById('cancelGame').addEventListener('click', () => {
     console.log('gameId=', gameId)
     // game, nick, password
     leave(gameId, nickname, password)
@@ -95,8 +94,8 @@ function writeMessage(text) {
     messagesContainer.insertBefore(message, messagesContainer.firstChild);
 }
 
-function getInfo() {
-    console.log(document.getElementById('nickField').value)
-    console.log(document.getElementById('passField').value)
-    // return [document.getElementById('nickField'), document.getElementById('passField')]
-}
+// function getInfo() {
+//     console.log(document.getElementById('nickField').value)
+//     console.log(document.getElementById('passField').value)
+//     // return [document.getElementById('nickField'), document.getElementById('passField')]
+// }
