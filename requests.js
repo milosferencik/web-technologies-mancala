@@ -11,7 +11,6 @@ function join(group, nick, pass, size, initial) {
     })
         .then(response => response.json())
         .then(data => {
-            console.log(data.game)
             return data.game;
         })
         .catch('Error:', console.log);
@@ -60,8 +59,6 @@ function ranking() {
 
 // Register - register user associated with password
 function register(nick, pass, doIfRegistered, doIfNot) {
-    console.log(nick)
-    console.log(pass)
     fetch(url + 'register', { method: 'POST', body: JSON.stringify({ nick: nick, password: pass }) })
         .then(function (response) {
             if (response.ok) {
@@ -78,7 +75,6 @@ function register(nick, pass, doIfRegistered, doIfNot) {
 // Update - updates the game situation
 function update(nick, gameId) {
     const es = new EventSource(url + `update?nick=${nick}&game=${gameId}`);
-    // es.onopen = e => console.log("open ", e)
     es.onmessage = function (event) {
         const data = JSON.parse(event.data);
         openTab(event, 'messagesTab')
@@ -87,48 +83,36 @@ function update(nick, gameId) {
         if (data.winner != undefined) {
             // Someone won - game is finished
             if (data.winner != null) {
-                console.log(`Player ${data.winner} won`)
-                //send data to server (points)
-                // notify(nickname, password, gameId, null)
+                writeMessage("Game is over! The winner is player " + data.winner + "!");
             }
             // Players tied
             else {
-                console.log(`It is a tie`)
-                //send data to server (points)
-                // notify(nickname, password, gameId, null)
+                writeMessage("Game is over! It is tie!");
             }
-            if(game != null) game.endGame();
-            game = null
-            es.close()
-            // Show "joinArea"
-            document.getElementById("joinArea").style.display = "inline"
-            // Show the created board
-            document.getElementById("player0").style.display = "none"
-            document.getElementById("board").style.display = "none"
-            document.getElementById("player1").style.display = "none"
-            document.getElementById("cancelGame").style.display = "none"
+            game = null;
+            es.close();
+            hideBoard();
             return;
         }
 
         // Board response
         if (data.board != undefined) {
-            var nicknames = new Array();
+            if (game.status == "initialized") {
+                game.status = "started";
+                const keys = Object.keys(data.board.sides);
+                game.setPlayersName(nick == keys[0] ? keys.reverse() : keys)
+            }
+
             var boardContent = new Array();
             for (var i in data.board.sides) {
                 // opponent
-                if (nick != i) {
-                    opponentInfo = data.board.sides[i]
-                    opponent = i
-                }
+                if (nick != i) 
+                    opponentInfo = data.board.sides[i];
                 // current player
-                if (nick == i) {
-                    currentInfo = data.board.sides[i]
-                }
+                if (nick == i)
+                    currentInfo = data.board.sides[i];
             }
-            nicknames.push(opponent)
-            nicknames.push(nickname)
-
-            const turn = data.board.turn
+            
             // merge arrays into one (boardContent)
             for (var i in opponentInfo.pits) {
                 boardContent.push(opponentInfo.pits[i])
@@ -139,29 +123,13 @@ function update(nick, gameId) {
             }
             boardContent.push(currentInfo.store)
 
-
-            board = new Board(size, initial, boardContent)
-            game = new Game((nick == turn) ? 1 : 0, 'remotePlayer', board, null, nicknames)
-
-
-            // Hide "joinArea"
-            document.getElementById("joinArea").style.display = "none"
-            // Show the created board
-            document.getElementById("player0").style.display = "flex"
-            document.getElementById("board").style.display = "flex"
-            document.getElementById("player1").style.display = "flex"
-            document.getElementById("cancelGame").style.display = "flex"
-            // Set text to player's actual nicknames
-            document.getElementById("player0").innerText = opponent;
-            document.getElementById("player1").innerText = nickname;
-
-
-            console.log(game)
+            game.currentPlayer = (nick == data.board.turn) ? 1 : 0;
+            game.board.updateBoard(boardContent);
+            writeMessage("It is Player " + data.board.turn + " turn.");
         }
     }
 
     es.onerror = function (event) {
         console.log("SSE error " + event)
     }
-    // es.close();
 }

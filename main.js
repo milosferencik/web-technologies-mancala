@@ -1,27 +1,25 @@
-var nickname
-var password
-var gameId
-var joinArea
-var opponentRemote
+var nickname;
+var password;
+var gameId;
+var joinArea;
+var opponentRemote;
+var game;
 
-var size
-var initial
+var size;
+var initial;
 
 
 window.onload = function() {
-    console.log("Loaded")
     joinArea = document.getElementById('joinArea')
     document.getElementById("defaultTab").click();
-    console.log(document.body.children[0])
 
     // GameArea invisible
-    // joinArea.style.display = 'none';
     document.getElementById('player1').style.display = 'none';
     document.getElementById('player0').style.display = 'none';
     document.getElementById('board').style.display = 'none';
     document.getElementById('cancelGame').style.display = 'none';
 
-    //Register/log in a user
+    // Register/log in a user
     const loginButton = document.getElementById('loginButton')
     loginButton.addEventListener('click', () => {
       nickname = document.getElementById('nickField').value
@@ -32,38 +30,29 @@ window.onload = function() {
 
 // Function executed if user is registered successfully
 function registeredSuccess() {
-  console.log("Log in OK");
-  
   document.getElementById('loginArea').style.display ="none";
   document.getElementById('errorMessage').style.display ="none";
+  document.getElementById("nickname").innerHTML = nickname;
 
   loginButton.addEventListener('click', ranking())
   
   // Join a game
   const startButton = document.getElementById('joinButton')
   startButton.addEventListener('click', () => {
-    // group, nick. pass, size (number of cavities), initial (seeds per cavity)
     size = parseInt(document.getElementById("numberOfHoles").value)
     initial = parseInt(document.getElementById("numberOfMarblesPerHole").value);
 
     // Join
+    // group, nick. pass, size (number of cavities), initial (seeds per cavity)
     join('37', nickname, password, size, initial).then((result) => {
       gameId = result
       update(nickname, gameId)
     })
 
     // Display game with indicated properties
-
+    game = new RemoteGame(size, initial);
+    showBoard();
   })
-  
-
-  // Leave game
-  document.getElementById('cancelGame').addEventListener('click', () => {
-    console.log('gameId=', gameId)
-    // game, nick, password
-    leave(gameId, nickname, password)
-  })
-
 }
 
 // Function executed if user failed at /register
@@ -93,9 +82,3 @@ function writeMessage(text) {
     message.innerHTML = new Date().toLocaleTimeString() + " &nbsp;&nbsp;" + text;
     messagesContainer.insertBefore(message, messagesContainer.firstChild);
 }
-
-// function getInfo() {
-//     console.log(document.getElementById('nickField').value)
-//     console.log(document.getElementById('passField').value)
-//     // return [document.getElementById('nickField'), document.getElementById('passField')]
-// }

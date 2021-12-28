@@ -66,20 +66,21 @@
 
     <!-- Join a game -->
     <div id="joinArea">
-        <p><b>Multiplayer mode</b></p>
-        <button id="joinButton">Join</button>
-        <hr>
-        <p><b>PC / 2 players</b></p>
+        <br>
         <label for="numberOfHoles" >Number of holes:</label>
         <input id="numberOfHoles" type="number" value="6" style="width: 50px;"/>
         <br>
         <label for="numberOfMarblesPerHole">Number of marbles per hole:</label>
         <input id="numberOfMarblesPerHole" type="number" value="4" style="width: 50px;"/>
         <br>
+        <p><b>Multiplayer mode</b></p>
+        <p>You nickname: <span id="nickname"></span></p>
+        <button id="joinButton">Join</button>
+        <hr>
+        <p><b>PC / 2 players</b></p>
         <label for="opponent">Choose an opponent:</label>
-        <select id="opponent" name="opponent" size="3">
-            <option value="localPlayer">L`cal player</option>
-            <option value="remotePlayer">Remote player</option>
+        <select id="opponent" name="opponent" size="2">
+            <option value="localPlayer">Local player</option>
             <option value="computer" selected>Computer</option>
         </select>
         <br>
@@ -102,7 +103,6 @@
         <input id="player0Name" type="text" value="Player 0"/>
         <br>
         <button class="startButton" onclick="startGame()">Start</button>
-        <button id="cancelButton">Cancel</button>
     </div>
     
 

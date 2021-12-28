@@ -11,8 +11,6 @@ let playerName = {
     1: "Player 1"
 }
 
-let game;
-
 // window.onload = function() {
 //     // show default tab
 //     document.getElementById("defaultTab").click();
@@ -28,48 +26,98 @@ function startGame() {
     settings.numberOfHoles = parseInt(document.getElementById("numberOfHoles").value);
     settings.numberOfMarblesPerHole = parseInt(document.getElementById("numberOfMarblesPerHole").value);
     settings.startPlayer = parseInt(document.querySelector('input[name="radioStartPlayer"]:checked').value);
-    playerName[0] = document.getElementById("player0Name").value;
-    playerName[1] = document.getElementById("player1Name").value;
-    document.getElementById("player0").innerText = playerName[0];
-    document.getElementById("player1").innerText = playerName[1];
     settings.opponent = document.getElementById("opponent").value;
     settings.computerLevel = document.getElementById("computerLevel").value; // [beginner, advanced]
-    var boardContent = createContentArray(settings.numberOfHoles);
-    board = new Board(settings.numberOfHoles, settings.numberOfMarblesPerHole, boardContent)
     // create new game
-    game = new Game(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, board, settings.computerLevel);
+    game = new LocalGame(settings.startPlayer, settings.numberOfHoles, settings.numberOfMarblesPerHole, settings.opponent, settings.computerLevel);
+    game.setPlayersName({0: document.getElementById("player0Name").value, 1: document.getElementById("player1Name").value});
+    showBoard();
 }
 
 function cancelGame() {
-    if (game != "undefined" && game.status == "started") {
+    if (game != undefined && game.status == "started") {
         if (!confirm('Are you sure you want to give up?')) return 1;
         // change status
         game.status = "ended";
-        // save result to Leaderboard
-        // writeToLeaderboard(getAnotherPlayer(game.currentPlayer),1,0,0);
-        // writeToLeaderboard(game.currentPlayer,0,1,0);
+        hideBoard();
+        if (game instanceof RemoteGame)
+            leave(nickname, password, gameId)
     }
     return 0;
 }
 
-// modes: 0 - remotePlay; 1 - localPlay; 2 - AI
 class Game {
-    // Constructure for local and AI
-    constructor(startPlayer, opponent, board, computerLevel, playerNicknames = null) {
-        this.opponent = opponent;
+    constructor(numberOfHoles, numberOfMarblesPerHole) {
         this.status = "initialized";
-        this.currentPlayer = startPlayer;
-        this.board = board;
-        this.computerAlgo = this.getComputerAlgo(computerLevel);
-        if (opponent == "remotePlayer") {
-            playerName = playerNicknames
+        this.board = new Board(numberOfHoles, numberOfMarblesPerHole);
+        this.playersName;
+    }
+
+    endGame() {
+        // change the status
+        this.status = "ended";
+        // write message about the result
+        // Current player won
+        if (this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
+            writeMessage("Game is over! The winner is player " + playerName[0] + " with score " + this.board.getPlayersMarblesInMancala(0) + ":" + this.board.getPlayersMarblesInMancala(1));
+        // It is a tie
+        } else if (this.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)) {
+            writeMessage("Game is over! It is tie!");
+        // Opponent won
+        } else {
+            writeMessage("Game is over! The winner is player " + playerName[1] + " with score " + this.board.getPlayersMarblesInMancala(1) + ":" + this.board.getPlayersMarblesInMancala(0));
         }
-        console.log(playerName)
+    }
+
+    setPlayersName(playersName) {
+        playerName = playersName;
+        document.getElementById("player0").innerText = playerName[0];
+        document.getElementById("player1").innerText = playerName[1];
+    }
+}
+
+class RemoteGame extends Game {
+    constructor(numberOfHoles, numberOfMarblesPerHole) {
+        super(numberOfHoles, numberOfMarblesPerHole);
+        this.board.initializeBoard(false, this);
+        this.currentPlayer;
+        writeMessage("Game is initialized. Waiting for opponent!");
+    }
+
+    play(pos) {
+        if (this.status == "ended") {
+            writeMessage("Game is over! Start new game!");
+            return;
+        } else if (this.status == "initialized" || this.currentPlayer == "undefined") {
+            writeMessage("Waiting for opponent!");
+            return;
+        } else if (!this.board.isPlayersHole(this.currentPlayer, pos)) {
+            writeMessage("Not your turn! It is " + playerName[this.currentPlayer] + " turn!");
+            return;
+        } else if (this.board.isHoleEmpty(pos)) {
+            writeMessage("You can not click on hole with zero marbles!");
+            return;
+        }
+
+        this.currentPlayer = getAnotherPlayer(this.currentPlayer);
+        // server: notify the server about the move
+        notify(nickname, password, gameId, pos - (this.board.numberOfHoles + 1))
+    }
+}
+
+// local and AI
+class LocalGame extends Game {
+    constructor(startPlayer, numberOfHoles, numberOfMarblesPerHole, opponent, computerLevel) {
+        // initialize game fields
+        super(numberOfHoles, numberOfMarblesPerHole);
+        this.opponent = opponent;
+        if (opponent == "computer") this.computerAlgo = this.getComputerAlgo(computerLevel);
+        this.currentPlayer = startPlayer;
         this.board.initializeBoard((opponent == "localPlayer"), this);
-        if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
-        console.log(this.currentPlayer)
-        console.log(playerName[this.currentPlayer])
+
         writeMessage("Game is initialized. Player " + playerName[this.currentPlayer] + " starts the game.");
+        // if the computer starts, let's call its computation
+        if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
     }
 
     // play the hole with position pos
@@ -102,6 +150,7 @@ class Game {
         if (end != 0) {
             // end the game
             this.endGame();
+            hideBoard();
             return;
         }
 
@@ -109,8 +158,6 @@ class Game {
         if (this.board.isPositionPlayersMancala(endPos, this.currentPlayer)) {
             writeMessage("Player " + playerName[this.currentPlayer] + " has another turn.");
             if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
-            // server: norify the server about the move
-            notify(nickname, password, gameId, pos - (parseInt(numberOfHoles.value) + 1))
             return
         }
 
@@ -118,33 +165,7 @@ class Game {
         this.currentPlayer = getAnotherPlayer(this.currentPlayer);
         writeMessage("Player " + playerName[this.currentPlayer] + " turn.");
         if (this.opponent == "computer" && this.currentPlayer == 0) this.computerAlgo(this.board);
-
-        // server: norify the server about the move
-        notify(nickname, password, gameId, pos - (parseInt(numberOfHoles.value) + 1))
     } 
-
-    endGame() {
-        // change the status
-        this.status = "ended";
-        // write message about the result
-        // Current player won
-        if (this.board.getPlayersMarblesInMancala(0) > this.board.getPlayersMarblesInMancala(1)) {
-            writeMessage("Game is over! The winner is player " + playerName[0] + "!");
-            // writeToLeaderboard(0,1,0,0);
-            // writeToLeaderboard(1,0,1,0);
-        // It is a tie
-        } else if (this.board.getPlayersMarblesInMancala(0) == this.board.getPlayersMarblesInMancala(1)) {
-            writeMessage("Game is over! It is tie!");
-            // writeToLeaderboard(0,0,0,1);
-            // writeToLeaderboard(1,0,0,1);
-        // Opponent won
-        } else {
-            writeMessage("Game is over! The winner is player " + playerName[1] + "!");
-            // writeToLeaderboard(0,0,1,0);
-            // writeToLeaderboard(1,1,0,0);
-            leave(nickname, password, gameId)
-        }
-    }
 
     // select correct algorithm for computer according to his level
     getComputerAlgo(computerLevel) {
@@ -186,27 +207,18 @@ class Board {
 
         // intialize board fields
         // content contains the number of marbles in holes
-        // this.content = new Array(2 * numberOfHoles + 2);
-        this.content = boardContent;
+        this.content = new Array(2*numberOfHoles+2);
         // board contains hole elements
-        this.board = new Array(2 * numberOfHoles + 2);
+        this.board = new Array(2*numberOfHoles+2);
         this.numberOfHoles = numberOfHoles;
         this.numberOfMarblesPerHole = numberOfMarblesPerHole
 
-    }
-
-    static createContentArray(numberOfHoles, numberOfMarbles) {
-        var result = new Array();
-
-        var n = 2 * numberOfHoles + 2;
-        for (let i = 0; i < n; i++) {
-            result[i] = numberOfMarbles;
+        for (let i = 0; i < this.content.length; i++) {
+            this.content[i] = this.numberOfMarblesPerHole;
         }
-        result[n-1] = 0;
-        result[numberOfHoles] = 0;
-        return result;
-    }
-        
+        this.content[this.getMancalaPosition(0)] = 0;
+        this.content[this.getMancalaPosition(1)] = 0;
+    }   
 
     copy(other) {
         if (other instanceof Board) {
@@ -360,27 +372,11 @@ class Board {
         this.createBoard(allHolesClickable, game);
         this.renderBoard();
     }
-}
 
-function writeToLeaderboard(player, win, lose, tie) {
-    var table = document.getElementById("leaderboardTable");
-    var n = table.rows.length;
-    // find row with player
-    for (i = 1; i < n; i++) {
-        if (table.rows[i].cells[0].innerText == playerName[player]) {
-            // update values
-            table.rows[i].cells[1].innerText = parseInt(table.rows[i].cells[1].innerText) + win;
-            table.rows[i].cells[2].innerText = parseInt(table.rows[i].cells[2].innerText) + lose;
-            table.rows[i].cells[3].innerText = parseInt(table.rows[i].cells[3].innerText) + tie;
-            return;
-        }
+    updateBoard(boardContent) {
+        this.content = boardContent;
+        this.renderBoard();
     }
-    // if new player create new row
-    let newRow = table.insertRow(n);
-    newRow.insertCell(0).innerText = playerName[player];
-    newRow.insertCell(1).innerText = win;
-    newRow.insertCell(2).innerText = lose;
-    newRow.insertCell(3).innerText = tie;
 }
 
 // returns position and the difference of computer's mancala and player's mancala
@@ -440,4 +436,24 @@ function advancedPlay(pos, board) {
 
 function getAnotherPlayer(player) {
     return (player + 1) % 2;
+}
+
+function showBoard() {
+    // Hide "joinArea"
+    document.getElementById("joinArea").style.display = "none";
+    // Show the created board
+    document.getElementById("player0").style.display = "flex";
+    document.getElementById("board").style.display = "flex";
+    document.getElementById("player1").style.display = "flex";
+    document.getElementById("cancelGame").style.display = "flex";
+}
+
+function hideBoard() {
+     // Show "joinArea"
+     document.getElementById("joinArea").style.display = "inline";
+     // Show the created board
+     document.getElementById("player0").style.display = "none";
+     document.getElementById("board").style.display = "none";
+     document.getElementById("player1").style.display = "none";
+     document.getElementById("cancelGame").style.display = "none";
 }
