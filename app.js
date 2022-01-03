@@ -11,13 +11,6 @@ let playerName = {
     1: "Player 1"
 }
 
-// window.onload = function() {
-//     // show default tab
-//     document.getElementById("defaultTab").click();
-//     // create game
-
-// }
-
 function startGame() {
     if (cancelGame() != 0) {
         return;
