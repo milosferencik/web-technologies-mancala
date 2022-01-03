@@ -7,43 +7,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CC3008: Mancala</title>
     <script src="app.js"></script>
+    <script src="main.js"></script>
+    <script src="requests.js" defer></script>
 </head>
 <body>
-    <nav>
-        <!-- Title -->
+
+    <!-- Identification -->
+    <div id="loginArea">
+        <label class="loginContent" for="uname"><b>Username</b></label>
+        <input class="loginContent" id="nickField" type="text" placeholder="Enter Username" name="uname" required>
+        <br class="loginContent">
+        <label class="loginContent" for="psw"><b>Password</b></label>
+        <input class="loginContent" id="passField" type="password" placeholder="Enter Password" name="psw" required>
+        <br class="loginContent">
+        <button class="loginContent" id="loginButton" type="submit">Login</button>
+        <p class="loginContent" id="errorMessage">Incorrect, try again.</p>
+    </div>
+
+    <nav name="navigation">
         <h1>Mancala</h1>
-        <!-- Commands
-        * view instructions
-        * start the game with the current configuration
-        * give up the game
-        * view ratings
-        -->
-        <button id="defaultTab" class="tabLinks" onclick="openTab(event, 'settingsTab')">Settings</button>
-        <button class="tabLinks" onclick="openTab(event, 'rulesTab')">Rules</button>
+        <button id="defaultTab" class="tabLinks" onclick="openTab(event, 'rulesTab')">Rules</button>
         <button class="tabLinks" onclick="openTab(event, 'messagesTab')">Messages</button>
         <button class="tabLinks" onclick="openTab(event, 'leaderboardTab')">Leaderboard</button>
-        <button class="tabLinks" onclick="openTab(event, 'loginTab')">Login</button>
     </nav>
     
-    <!-- Settings
-        * number of holes on each side of the board
-        * initial number of stones per hole
-        * play against another player or computer
-        * start the game or let computer start
-        * artificial intelligence level
-        Assignment 1: only against the computer 
-    -->
-    <div id="settingsTab" class="tabContent">
+    
+    <!-- Instructions -->
+    <div id="rulesTab" class="tabContent">
+        <p>Mancala has the following rules. Read them to understand how to play this game</p>
+        <ol>
+            <li> Play always moves around the board in a counter-clockwise circle (to the right)
+            <li> The store on your right belongs to you. That is where you keep the seeds you win.
+            <li> The six pits near you are your pits.
+            <li> Only use one hand to pick up and put down seeds.
+            <li> Once you touch the seeds in a pit, you must move those seeds.
+        </ol>
+        <p>More detailed rules can be found <a target="_blank" href="https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf">here</a></p>
+    </div>
+
+
+    <!-- Messages -->
+    <div id="messagesTab" class="tabContent">
+        <div id="messagesContainer"></div>
+    </div>
+    
+    <!-- Leaderboard -->
+    <div id="leaderboardTab" class="tabContent">
+        <table id="leaderboardTable">
+            <tr>
+              <th>Nick</th>
+              <th>Victories</th> 
+              <th>Games</th>
+            </tr>
+          </table>
+    </div>
+
+    <!-- Join a game -->
+    <div id="joinArea">
+        <br>
         <label for="numberOfHoles" >Number of holes:</label>
-        <input id="numberOfHoles" type="number" value="6"/>
+        <input id="numberOfHoles" type="number" value="6" style="width: 50px;"/>
         <br>
         <label for="numberOfMarblesPerHole">Number of marbles per hole:</label>
-        <input id="numberOfMarblesPerHole" type="number" value="4"/>
+        <input id="numberOfMarblesPerHole" type="number" value="4" style="width: 50px;"/>
         <br>
+        <p><b>Multiplayer mode</b></p>
+        <p>You nickname: <span id="nickname"></span></p>
+        <button id="joinButton">Join</button>
+        <hr>
+        <p><b>PC / 2 players</b></p>
         <label for="opponent">Choose an opponent:</label>
-        <select id="opponent" name="opponent" size="3">
+        <select id="opponent" name="opponent" size="2">
             <option value="localPlayer">Local player</option>
-            <option value="remotePlayer">Remote player</option>
             <option value="computer" selected>Computer</option>
         </select>
         <br>
@@ -66,107 +101,27 @@
         <input id="player0Name" type="text" value="Player 0"/>
         <br>
         <button class="startButton" onclick="startGame()">Start</button>
-        <button class="cancelButton" onclick="cancelGame()">Cancel</button>
     </div>
     
-    <!-- Instructions (Done)
-        * this area presents the game rules and tips on how to play the game
-    -->
-    <!-- Rules have been taken from https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf -->
-    <div id="rulesTab" class="tabContent">
-        <p>Mancala has the following rules. Read them to understand how to play this game</p>
-        <ol>
-            <li> Play always moves around the board in a counter-clockwise circle (to the right)
-            <li> The store on your right belongs to you. That is where you keep the seeds you win.
-            <li> The six pits near you are your pits.
-            <li> Only use one hand to pick up and put down seeds.
-            <li> Once you touch the seeds in a pit, you must move those seeds.
-        </ol>
-        <p>More detailed rules can be found <a target="_blank" href="https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf">here</a></p>
-    </div>
-
-
-    <!-- Messages (Do now)
-        * Display messages during the game
-        * Examples: "player must return to play", "player gave up and lost", "game ended with a victory of player X"
-    -->
-    <div id="messagesTab" class="tabContent">
-        <div id="messagesContainer"></div>
-    </div>
-    
-    <!-- Leaderboard (Do now)
-        * leaderboard with the best scores registered
-        * Assignment 1: scores only against the computer
-        * later assignments will require scores to be taken from a server (player vs player)
-        * also can be a "transitional panel" that opens with a command (ex: button click)
-    -->
-    <div id="leaderboardTab" class="tabContent">
-        <table id="leaderboardTable">
-            <tr>
-              <th>Player</th>
-              <th>Win</th> 
-              <th>Lose</th>
-              <th>Tie</th>
-            </tr>
-          </table>
-    </div>
-    
-    <!-- Identification (TODO)
-        * player must authenticate with login and password
-        * after auth, allow the authenticated session to end
-        * Assignment 1: created area for it, but authentication will come in next assignments
-    -->
-    <div id="loginTab" class="tabContent">
-        <label for="uname"><b>Username</b></label>
-        <input type="text" placeholder="Enter Username" name="uname" required>
-        <br>
-        <label for="psw"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="psw" required>
-        <br>
-        <button type="submit">Login</button>
-    </div>
 
     <!-- Game Area -->
     <hr>
     <div id="player0">Player 0</div>
-
     <div id="board">
         <div id="col1">
             <div id="mancala0"></div>
         </div>
-
         <div id="col2">
             <div id="row0"></div>
             <div id="row1"></div>
         </div>
-
         <div id="col3">
             <div id="mancala1"></div>
         </div>
     </div>
-
     <div id="player1">Player 1</div>
-
-    <!-- State (DONE)
-        * this area must show: 
-            * number of stones in each of the "houses" (side pockets)
-            * small holes
-    -->
-
-    <!-- Board (DONE pt.1)
-        * main area of the application
-        * initially can be coded in HTML
-        * positioning and graphic design must be done in CSS
-        * afterwards, use JS using the DOM and the CSSOM, so that different boards can be generated depending on the settings 
-        * identify data structure to represent the boarc
-        * use OOP approach for the board
-     -->
+    <button id="cancelGame" onclick="cancelGame()">Cancel game</button>
     
-    <!-- Artificial Intelligence
-        * Assignment 1: only against client (computer) locally
-        * the simplest algorithm is to choose the move that produces the most number of player stones
-        * the implementation of an algorithm that allows defining a level of difficulty will be valued
-        * Minimax algorithm (https://pt.wikipedia.org/wiki/Minimax) can be implemented to play smarter. In this case the difficulty level can be mapped in depth.
-    -->
+
 </body>
 </html>

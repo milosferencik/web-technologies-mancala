@@ -1,5 +1,4 @@
-  
-  
+ 
 body {
     display: flex;
     flex-direction: column;
@@ -43,7 +42,7 @@ button {
 }
   
 /* Extra style for the cancel button (red) */
-.cancelButton {
+.cancelButton, #cancelGame {
     background-color: #f44336;
 }
 
@@ -71,7 +70,8 @@ nav button.active {
 /* Style the tab content */
 .tabContent {
     display: none;
-    overflow: scroll;
+    overflow-y: scroll;
+    overflow-x: hidden;
     height: 150px;
     padding: 6px 12px;
     padding-left: 50px;
@@ -184,4 +184,37 @@ nav button.active {
     align-items: center;
     font-size: 20px;
     cursor: pointer;
+}
+
+#loginArea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    background-color: white;
+    border: solid;
+    border-color: white;
+    z-index: 3;
+}
+
+.loginContent {
+    position: absolute;
+    /* display:flex;justify-content:center;align-items:center; */
+    /* top: 50px; */
+}
+
+p#errorMessage {
+    display: none;
+    color: red;
+    position: absolute;
+    left: 75px;
+}
+
+#settingsTab {
+    position: absolute;
+    height: 1500px;
+    width: 500px;
+    justify-content: center;
+    align-items: center;
 }
