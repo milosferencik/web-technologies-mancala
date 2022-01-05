@@ -1,4 +1,5 @@
-const url = 'http://twserver.alunos.dcc.fc.up.pt:8008/'
+// const url = 'http://twserver.alunos.dcc.fc.up.pt:8008/'
+const url = 'http://twserver.alunos.dcc.fc.up.pt:8137/'
 
 
 // Join - join players to start game
@@ -44,12 +45,15 @@ function ranking() {
         .then(data => {
             // Set data int the leaderboard tab
             //[{nick, victories, games}, ...] 10 elements
-            const arr = data.ranking
-            var table = document.getElementById('leaderboardTable')
-
-            for (let i = 1; i < 10; i++) {
-                let newRow = table.insertRow(i);
-                newRow.insertCell(0).innerText = arr[i].nick
+            const arr = data.ranking;
+            var table = document.getElementById('leaderboardTable');
+            var rowCount = table.rows.length;
+            for (var i = 1; i < rowCount; i++) {
+                table.deleteRow(1);
+            }
+            for (let i = 0; i < arr.length; i++) {
+                let newRow = table.insertRow(i+1);
+                newRow.insertCell(0).innerText = arr[i].nick;
                 newRow.insertCell(1).innerText = arr[i].victories;
                 newRow.insertCell(2).innerText = arr[i].games;
             }

@@ -63,6 +63,8 @@ function registeredFailed() {
 
 function openTab(evt, tabName) {
     let i, tabContent, tabLinks;
+    if (tabName == "leaderboardTab")
+      ranking();
     tabContent = document.getElementsByClassName("tabContent");
     for (i = 0; i < tabContent.length; i++) {
       tabContent[i].style.display = "none";
